@@ -1,0 +1,2077 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Stock, orders, payouts, expenses and profit for Meesho and Flipkart sellers.">
+<meta name="theme-color" content="#2747B5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Khata">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Seller Khata</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@500;600&family=Mukta:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a seller's khata (ledger) — sidebar on desktop, bottom tabs + quick-add on phone; ruled rows, ink-blue figures */
+:root{
+  --bg:#F2F4F8; --surface:#FFFFFF; --surface-2:#ECEFF5; --line:#DCE2EB; --line-2:#C5CEDB;
+  --ink:#121A27; --ink-2:#435063; --ink-3:#717D91;
+  --accent:#2747B5; --accent-ink:#FFFFFF; --accent-soft:#E5EAFA;
+  --good:#11734A; --good-soft:#E0F2E9; --bad:#BC3227; --bad-soft:#FBE6E3; --warn:#9A5A00; --warn-soft:#FAEFD9;
+  --meesho:#9B1E86; --flipkart:#1F67D8; --other:#5B6577;
+  --bar:#C9D3F2; --scrim:rgba(10,14,22,.46);
+  --shadow:0 1px 2px rgba(18,26,39,.06),0 8px 24px rgba(18,26,39,.08);
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"Mukta",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r:14px; --r-sm:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1118; --surface:#131A24; --surface-2:#1A2330; --line:#243041; --line-2:#344358;
+    --ink:#E6ECF4; --ink-2:#A8B3C3; --ink-3:#7E8A9C;
+    --accent:#90A8FF; --accent-ink:#0C1118; --accent-soft:#1C2849;
+    --good:#4CC98E; --good-soft:#12342A; --bad:#FF8075; --bad-soft:#3B1B18; --warn:#F0B451; --warn-soft:#382A10;
+    --meesho:#E47FD2; --flipkart:#78A9FF; --other:#A4AEBE;
+    --bar:#2B3D6E; --scrim:rgba(0,0,0,.6);
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1118; --surface:#131A24; --surface-2:#1A2330; --line:#243041; --line-2:#344358;
+  --ink:#E6ECF4; --ink-2:#A8B3C3; --ink-3:#7E8A9C;
+  --accent:#90A8FF; --accent-ink:#0C1118; --accent-soft:#1C2849;
+  --good:#4CC98E; --good-soft:#12342A; --bad:#FF8075; --bad-soft:#3B1B18; --warn:#F0B451; --warn-soft:#382A10;
+  --meesho:#E47FD2; --flipkart:#78A9FF; --other:#A4AEBE;
+  --bar:#2B3D6E; --scrim:rgba(0,0,0,.6);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:-.015em;line-height:1.15}
+h1{font-size:26px;font-weight:700}
+h2{font-size:17px;font-weight:700}
+p{margin:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.muted{color:var(--ink-3)}
+.small{font-size:13px}
+.pos{color:var(--good)} .neg{color:var(--bad)} .warn-t{color:var(--warn);font-weight:600}
+.grow{flex:1}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- shell ---------- */
+.app{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100%}
+.side{background:var(--surface);border-right:1px solid var(--line)}
+.side-in{position:sticky;top:0;display:flex;flex-direction:column;gap:2px;height:100vh;box-sizing:border-box;padding-block:18px 16px;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:14px;overflow:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:2px 6px 14px;min-width:0}
+.brand-mark{width:36px;height:36px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:20px;flex:none}
+.brand-name{font-family:var(--f-display);font-weight:800;font-size:19px;letter-spacing:-.02em;line-height:1.1}
+.brand-sub{font-size:12.5px;color:var(--ink-3);overflow-wrap:anywhere}
+.nav-btn{display:flex;align-items:center;gap:11px;width:100%;border:0;background:none;padding:9px 10px;border-radius:10px;color:var(--ink-2);font-weight:500;text-align:left;font-size:15px}
+.nav-btn:hover{background:var(--surface-2);color:var(--ink)}
+.nav-btn[aria-current="page"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.nav-btn svg{flex:none}
+.side-add{padding:12px 4px 4px}
+.side-add .btn{width:100%}
+.side-foot{margin-top:auto;padding:12px 8px 0;font-size:12.5px;color:var(--ink-3);display:flex;gap:8px;align-items:flex-start}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--good);flex:none;margin-top:6px}
+.dot.off{background:var(--warn)}
+.col{min-width:0;display:flex;flex-direction:column}
+.topbar{display:none}
+.main{min-width:0;padding-block:26px 56px;padding-left:max(28px,env(safe-area-inset-left,0px));padding-right:max(28px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.tabbar{display:none}
+.icon-btn{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--ink-2);flex:none}
+.icon-btn:hover{color:var(--ink);background:var(--surface-2)}
+@media (max-width:899px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{display:none}
+  .topbar{display:flex;position:sticky;top:env(safe-area-inset-top,0px);z-index:30;align-items:center;gap:10px;background:var(--bg);padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-bottom:1px solid var(--line)}
+  .topbar .brand{padding:0}
+  .topbar .brand-mark{width:32px;height:32px;font-size:18px;border-radius:9px}
+  .main{padding-block:16px calc(100px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .tabbar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:end;position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:max(6px,env(safe-area-inset-left,0px));padding-right:max(6px,env(safe-area-inset-right,0px))}
+  h1{font-size:23px}
+}
+.tab{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 2px 7px;font-size:11.5px;color:var(--ink-3);font-weight:600}
+.tab[aria-current="page"]{color:var(--accent)}
+.tab-add{align-self:center}
+.tab-add span.plus{width:48px;height:48px;border-radius:16px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;box-shadow:var(--shadow);margin-top:-18px}
+
+/* ---------- page header ---------- */
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:12px 20px;flex-wrap:wrap}
+.ph-t{display:flex;flex-direction:column;gap:3px;min-width:0}
+.ph-t p{color:var(--ink-3)}
+.ph-a{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;max-width:100%}
+.chips::-webkit-scrollbar{display:none}
+.chip{border:1px solid var(--line-2);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13.5px;font-weight:600;color:var(--ink-2);white-space:nowrap;flex:none}
+.chip:hover{color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.chip .cnt{font-family:var(--f-num);font-size:12px;opacity:.7;margin-left:4px}
+
+/* ---------- buttons / inputs ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 16px;border-radius:10px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-weight:600;white-space:nowrap;font-size:14.5px;text-decoration:none}
+.btn:hover{background:var(--surface-2)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn-p{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn-p:hover{background:var(--accent);filter:brightness(1.08)}
+.btn-d{color:var(--bad);border-color:var(--bad-soft);background:var(--bad-soft)}
+.btn-d:hover{background:var(--bad-soft);filter:brightness(.97)}
+.btn-sm{min-height:32px;padding:0 12px;font-size:13.5px;border-radius:8px}
+.btn-ghost{border-color:transparent;background:transparent}
+.btn-ghost:hover{background:var(--surface-2)}
+.btn-link{border:0;background:none;color:var(--accent);font-weight:600;padding:0;font-size:inherit}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field>span{font-size:13px;font-weight:600;color:var(--ink-2)}
+.field small{color:var(--ink-3);font-size:12.5px;line-height:1.35}
+.in{height:42px;border:1px solid var(--line-2);border-radius:10px;background:var(--surface);padding:0 12px;width:100%;box-sizing:border-box;min-width:0;font-size:15px}
+select.in{padding-right:30px}
+textarea.in{height:auto;min-height:70px;padding:9px 12px;resize:vertical;line-height:1.4}
+.in:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+.inr{position:relative;display:block}
+.inr::before{content:"₹";position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--ink-3);pointer-events:none}
+.inr .in{padding-left:27px}
+.r2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.r3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media(max-width:560px){.r3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.35}
+.check input{width:18px;height:18px;margin:1px 0 0;accent-color:var(--accent);flex:none}
+.seg{display:flex;border:1px solid var(--line-2);border-radius:10px;overflow:hidden;width:100%}
+.seg button{flex:1;border:0;background:var(--surface);padding:9px 6px;font-weight:600;font-size:14px;color:var(--ink-2);border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+
+/* ---------- cards ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;min-width:0}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.card-h p{color:var(--ink-3);font-size:13px}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.g-side{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px}
+@media(max-width:1000px){.g2,.g-side{grid-template-columns:minmax(0,1fr)}}
+
+/* hero */
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.4fr);gap:18px 28px;align-items:center}
+@media(max-width:760px){.hero{grid-template-columns:minmax(0,1fr)}}
+.hero-l{display:flex;flex-direction:column;gap:4px;min-width:0}
+.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:var(--ink-3)}
+.hero-v{font-family:var(--f-num);font-weight:600;font-size:clamp(30px,8vw,44px);letter-spacing:-.04em;line-height:1.05;overflow-wrap:anywhere}
+.hero-sub{font-size:14px;color:var(--ink-2)}
+.ledger{display:flex;flex-direction:column;font-size:14.5px}
+.ledger-r{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dashed var(--line-2)}
+.ledger-r:last-child{border-bottom:0;font-weight:700;border-top:1.5px solid var(--ink);margin-top:2px;padding-top:9px}
+.ledger-r span:first-child{color:var(--ink-2)}
+.ledger-r:last-child span:first-child{color:var(--ink)}
+.note{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:var(--r-sm);background:var(--warn-soft);color:var(--warn);font-size:13.5px;line-height:1.4}
+.note svg{flex:none;margin-top:1px}
+.note.info{background:var(--accent-soft);color:var(--accent)}
+.note.bad{background:var(--bad-soft);color:var(--bad)}
+.note .btn-link{color:inherit;text-decoration:underline}
+
+/* kpis */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media(max-width:1000px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:13px 15px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.kpi-l{font-size:12px;color:var(--ink-3);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.kpi-v{font-family:var(--f-num);font-weight:600;font-size:clamp(19px,4.6vw,24px);letter-spacing:-.03em;overflow-wrap:anywhere;line-height:1.2}
+.kpi-s{font-size:12.5px;color:var(--ink-3)}
+
+/* chart */
+.chart{position:relative;width:100%}
+.chart svg{display:block;width:100%}
+.ch-t{fill:var(--ink-3);font-size:11px;font-family:var(--f-num)}
+.ch-grid{stroke:var(--line);stroke-width:1}
+.ch-zero{stroke:var(--line-2);stroke-width:1}
+.ch-inc{fill:var(--bar)}
+.ch-pro{fill:var(--good)}
+.ch-loss{fill:var(--bad)}
+.ch-sel{fill:var(--surface-2)}
+.readout{display:flex;gap:6px 16px;flex-wrap:wrap;font-size:13px;color:var(--ink-2);min-height:20px;margin-bottom:6px}
+.readout b{color:var(--ink);font-weight:600}
+.legend{display:flex;gap:14px;font-size:12.5px;color:var(--ink-3);flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+/* platform split */
+.plats{display:flex;flex-direction:column;gap:14px}
+.plat-row{display:flex;flex-direction:column;gap:6px}
+.plat-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:14px}
+.bar{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px}
+.plat{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:13px;white-space:nowrap}
+.plat i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.pm i,.bar .pm{background:var(--meesho)} .pf i,.bar .pf{background:var(--flipkart)} .px i,.bar .px{background:var(--other)}
+
+/* pills */
+.pill{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.s-pending{background:var(--warn-soft);color:var(--warn)}
+.s-shipped{background:var(--accent-soft);color:var(--accent)}
+.s-delivered{background:var(--good-soft);color:var(--good)}
+.s-rto,.s-return{background:var(--bad-soft);color:var(--bad)}
+.s-cancelled,.s-lost{background:var(--surface-2);color:var(--ink-3)}
+.stock-ok{background:var(--good-soft);color:var(--good)}
+.stock-low{background:var(--warn-soft);color:var(--warn)}
+.stock-out{background:var(--bad-soft);color:var(--bad)}
+
+/* thumbs */
+.thumb{border-radius:10px;background:var(--surface-2);overflow:hidden;display:grid;place-items:center;flex:none;color:var(--ink-3);font-family:var(--f-display);font-weight:700;font-size:13px;border:1px solid var(--line)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* lists */
+.list{display:flex;flex-direction:column}
+.lrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 2px;border:0;border-bottom:1px solid var(--line);background:none;text-align:left;width:100%;color:inherit}
+.lrow:last-child{border-bottom:0}
+button.lrow:hover{background:var(--surface-2)}
+.lrow-m{min-width:0;display:flex;flex-direction:column;gap:2px}
+.lrow-t{font-weight:600;overflow-wrap:anywhere;line-height:1.3}
+.lrow-s{font-size:13px;color:var(--ink-3);display:flex;gap:4px 10px;flex-wrap:wrap;align-items:center}
+.lrow-e{display:flex;flex-direction:column;align-items:flex-end;gap:3px;text-align:right}
+.lrow-e .num{font-weight:600}
+
+/* products */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.pcard{display:flex;gap:13px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px;text-align:left;width:100%;color:inherit;min-width:0;align-items:flex-start}
+.pcard:hover{border-color:var(--line-2);box-shadow:var(--shadow)}
+.pcard-m{min-width:0;display:flex;flex-direction:column;gap:5px;flex:1}
+.pcard-t{font-weight:700;line-height:1.25;overflow-wrap:anywhere}
+.pcard-row{display:flex;gap:6px 12px;flex-wrap:wrap;font-size:13px;color:var(--ink-2);align-items:center}
+.sku{font-family:var(--f-num);font-size:11.5px;background:var(--surface-2);border-radius:6px;padding:1px 6px;color:var(--ink-2);overflow-wrap:anywhere}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);font-weight:600;text-align:left;padding:8px 10px;border-bottom:1.5px solid var(--line-2);white-space:nowrap}
+.tbl td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.tbl .r{text-align:right;white-space:nowrap}
+.tbl tfoot td{font-weight:700;border-top:1.5px solid var(--ink);border-bottom:0}
+.tbl .pn{display:flex;gap:10px;align-items:center;min-width:180px}
+
+/* sheets */
+.ov{position:fixed;inset:0;z-index:60;background:var(--scrim);display:flex;align-items:center;justify-content:center;padding:24px}
+.sheet{background:var(--surface);border-radius:18px;width:min(620px,100%);max-height:calc(100% - 32px);display:flex;flex-direction:column;box-shadow:var(--shadow);overflow:hidden}
+.sheet.wide{width:min(820px,100%)}
+.sheet-h{display:flex;align-items:center;gap:12px;padding:14px 18px 14px 20px;border-bottom:1px solid var(--line)}
+.sheet-h h2{flex:1;min-width:0}
+.sheet-b{padding:18px 20px;overflow:auto;display:flex;flex-direction:column;gap:14px;overscroll-behavior:contain}
+.sheet-f{padding:12px 20px;border-top:1px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sheet-f .grow{min-width:0}
+@media(max-width:640px){
+  .ov{align-items:flex-end;padding:0}
+  .sheet,.sheet.wide{width:100%;border-radius:18px 18px 0 0;max-height:94%}
+  .sheet-h,.sheet-b,.sheet-f{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .sheet-f{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:-4px 0 2px}
+.tabs button{border:0;background:none;padding:8px 12px;font-weight:600;color:var(--ink-3);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.sec-t{font-family:var(--f-display);font-weight:700;font-size:14.5px;margin-top:4px}
+.box{border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;display:flex;flex-direction:column;gap:10px}
+.plat-box-h{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.calc{font-size:13px;color:var(--ink-2)}
+.calc b{font-family:var(--f-num)}
+
+/* photos */
+.photos{display:flex;gap:10px;flex-wrap:wrap}
+.photo{position:relative;width:92px;height:92px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--surface-2)}
+.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-tools{position:absolute;inset:auto 0 0 0;display:flex;justify-content:space-between;padding:4px;gap:4px;background:linear-gradient(transparent,rgba(0,0,0,.55))}
+.photo-tools button{border:0;border-radius:7px;background:rgba(255,255,255,.92);color:#121A27;font-size:11px;font-weight:700;padding:2px 6px}
+.photo-tools button.danger{color:#BC3227}
+.photo .cover{position:absolute;top:5px;left:5px;background:rgba(18,26,39,.78);color:#fff;font-size:10.5px;font-weight:700;border-radius:6px;padding:1px 6px}
+.photo-add{width:92px;height:92px;border-radius:12px;border:1.5px dashed var(--line-2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ink-2);font-size:12.5px;font-weight:600;cursor:pointer;background:var(--surface);text-align:center}
+.photo-add:hover{border-color:var(--accent);color:var(--accent)}
+.photo-add input{display:none}
+
+/* quick add */
+.qa{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media(max-width:340px){.qa{grid-template-columns:minmax(0,1fr)}}
+.qa-btn{display:flex;flex-direction:column;align-items:flex-start;gap:4px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:14px;text-align:left;color:inherit}
+.qa-btn:hover{border-color:var(--accent)}
+.qa-btn svg{color:var(--accent)}
+.qa-btn b{font-size:15px}
+.qa-btn span{font-size:12.5px;color:var(--ink-3);line-height:1.3}
+
+/* misc */
+.banner{display:flex;gap:10px 14px;align-items:center;flex-wrap:wrap;padding:11px 14px;border-radius:var(--r-sm);font-size:14px;border:1px solid var(--line)}
+.b-sample{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.b-info{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+.b-bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.banner .grow{min-width:200px}
+.empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:28px 16px;color:var(--ink-2)}
+.empty svg{color:var(--ink-3)}
+.empty h3{font-size:16px;color:var(--ink)}
+.empty p{max-width:420px;font-size:14px;color:var(--ink-3)}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media(max-width:860px){.steps{grid-template-columns:minmax(0,1fr)}}
+.step{border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px;background:var(--surface)}
+.step-n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-num);font-weight:600;font-size:13px;background:var(--accent-soft);color:var(--accent)}
+.step.done .step-n{background:var(--good-soft);color:var(--good)}
+.step b{font-size:15px}
+.step p{font-size:13.5px;color:var(--ink-3);flex:1}
+.step .btn{align-self:flex-start;margin-top:4px}
+.toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;width:min(440px,calc(100% - 32px));pointer-events:none}
+@media(min-width:900px){.toasts{bottom:28px}}
+.toast{background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;font-weight:500;box-shadow:var(--shadow);pointer-events:auto;text-align:center}
+.toast.bad{background:var(--bad);color:#fff}
+.drop{border:1.5px dashed var(--line-2);border-radius:var(--r);padding:28px 16px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;background:var(--surface);cursor:pointer}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop input{display:none}
+.drop b{font-size:16px}
+.map-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr);gap:8px 12px;align-items:center;font-size:14px}
+.map-grid .hd{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);font-weight:600}
+.map-grid .sample{font-family:var(--f-num);font-size:12px;color:var(--ink-3);overflow-wrap:anywhere}
+@media(max-width:620px){.map-grid{grid-template-columns:minmax(0,1fr);gap:4px}.map-grid .sample,.map-grid .hd{display:none}.map-grid select{margin-bottom:10px}}
+.tbl.nowrap td,.tbl.nowrap th{white-space:nowrap}
+@media(max-width:560px){.hide-sm{display:none}.r2.stack-sm{grid-template-columns:minmax(0,1fr)}}
+.help{font-size:13.5px;color:var(--ink-2);display:flex;flex-direction:column;gap:6px}
+.help li{margin-left:-6px}
+.help ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.loading{display:flex;flex-direction:column;gap:14px}
+.sk{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);height:96px;position:relative;overflow:hidden}
+.sk::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,var(--surface-2),transparent);animation:sh 1.4s infinite}
+@keyframes sh{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+@media (prefers-reduced-motion: reduce){.sk::after{animation:none}}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 14px;font-size:14px}
+.kv dt{color:var(--ink-3)}
+.kv dd{margin:0;text-align:right;font-family:var(--f-num);overflow-wrap:anywhere}
+.cat-bar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;font-size:14px}
+.cat-bar .bar{grid-column:1 / -1;height:6px}
+.cat-bar .bar i{background:var(--accent)}
+.more-btn{display:flex;justify-content:center;padding-top:12px}
+.pager{font-size:13px;color:var(--ink-3);text-align:center;padding-top:8px}
+</style>
+<style>
+.auth-ov{position:fixed;inset:0;z-index:100;background:var(--bg);display:grid;place-items:center;overflow:auto;padding-block:max(24px,env(safe-area-inset-top,0px)) max(24px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.auth-card{width:min(400px,100%);box-sizing:border-box;display:flex;flex-direction:column;gap:14px;padding:24px 22px;box-shadow:var(--shadow)}
+.auth-card .brand{padding:0 0 4px}
+.auth-card .btn-p{width:100%;min-height:44px}
+.auth-links{display:flex;justify-content:space-between;gap:8px 14px;flex-wrap:wrap;font-size:14px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div style="min-height:100vh;display:grid;place-items:center;font-family:'Mukta',system-ui,sans-serif;color:#717D91;background:var(--bg)">Opening your khata…</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="adapter.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.umd.js"></script>
+<script>
+(function(){
+'use strict';
+const { useState, useEffect, useMemo, useRef, useSyncExternalStore } = React;
+const html = htm.bind(React.createElement);
+const XLSX_URL = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+
+/* ======================= utils ======================= */
+const pad2 = n => String(n).padStart(2, '0');
+const isoDate = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+const today = () => isoDate(new Date());
+const monthOf = d => String(d || '').slice(0, 7);
+function addDays(iso, n){ const [y, m, d] = iso.split('-').map(Number); return isoDate(new Date(y, m - 1, d + n)); }
+function addMonths(ym, n){ let [y, m] = ym.split('-').map(Number); m += n; while (m > 12){ m -= 12; y++; } while (m < 1){ m += 12; y--; } return `${y}-${pad2(m)}`; }
+function monthLabel(ym){ const [y, m] = ym.split('-').map(Number); return new Date(y, m - 1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }); }
+function monthShort(ym){ const [y, m] = ym.split('-').map(Number); return new Date(y, m - 1, 1).toLocaleDateString('en-IN', { month: 'short' }) + ' ' + String(y).slice(2); }
+function dayLabel(iso){ if (!iso) return '—'; const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }); }
+function dayLong(iso){ if (!iso) return '—'; const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); }
+const uid = (p = '') => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const round2 = n => Math.round((Number(n) || 0) * 100) / 100;
+function fmtINR(n, dec){
+  if (n == null || isNaN(n)) return '—';
+  const neg = n < 0, a = Math.abs(n);
+  const d = dec != null ? dec : (a < 1000 && Math.round(a * 100) % 100 !== 0 ? 2 : 0);
+  return (neg ? '−' : '') + '₹' + a.toLocaleString('en-IN', { minimumFractionDigits: d, maximumFractionDigits: d });
+}
+function fmtShort(n){
+  const a = Math.abs(n), s = n < 0 ? '−' : '';
+  if (a >= 1e7) return s + '₹' + (a / 1e7).toFixed(a >= 1e8 ? 0 : 1).replace(/\.0$/, '') + ' Cr';
+  if (a >= 1e5) return s + '₹' + (a / 1e5).toFixed(a >= 1e6 ? 0 : 1).replace(/\.0$/, '') + ' L';
+  if (a >= 1e3) return s + '₹' + (a / 1e3).toFixed(a >= 1e4 ? 0 : 1).replace(/\.0$/, '') + 'k';
+  return s + '₹' + Math.round(a);
+}
+const fmtN = n => (Number(n) || 0).toLocaleString('en-IN');
+const R0 = n => fmtINR(n, 0);
+const sgn = n => n < 0 ? 'neg' : n > 0 ? 'pos' : '';
+const pct = (a, b) => b ? Math.round(a / b * 1000) / 10 : 0;
+function hashStr(s){ let h = 5381; s = String(s); for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return Math.abs(h); }
+const str = v => v == null || v === '' ? '' : String(v);
+const sumSet = set => round2(Object.values(set || {}).reduce((a, b) => a + (Number(b) || 0), 0));
+const normSku = s => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+const cleanText = v => String(v == null ? '' : v).trim().replace(/\s+/g, ' ');
+const strip = o => JSON.parse(JSON.stringify(o));
+function num(v){
+  if (v == null) return undefined;
+  if (typeof v === 'number') return isFinite(v) ? v : undefined;
+  let s = String(v).trim().replace(/[−–]/g, '-'); if (!s) return undefined;
+  let neg = false;
+  if (/^\(.*\)$/.test(s)){ neg = true; s = s.slice(1, -1); }
+  s = s.replace(/₹|rs\.?|inr/gi, '').replace(/[,\s]/g, '');
+  if (s.startsWith('-')){ neg = !neg; s = s.slice(1); } else if (s.startsWith('+')) s = s.slice(1);
+  if (s.endsWith('-')){ neg = !neg; s = s.slice(0, -1); }
+  if (!/^(\d+\.?\d*|\.\d+)$/.test(s)) return undefined;
+  const n = parseFloat(s); return isFinite(n) ? (neg ? -n : n) : undefined;
+}
+const MON = { jan:1, feb:2, mar:3, apr:4, may:5, jun:6, jul:7, aug:8, sep:9, oct:10, nov:11, dec:12 };
+function pdate(v){
+  if (v == null || v === '') return undefined;
+  if (typeof v === 'number'){
+    if (v > 20000 && v < 80000){ const d = new Date(Math.round((v - 25569) * 86400000)); return `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCDate())}`; }
+    return undefined;
+  }
+  if (v instanceof Date) return isNaN(v) ? undefined : isoDate(v);
+  const s = String(v).trim(); let m;
+  const ok = (y, mo, d) => { y = +y; if (y < 100) y += 2000; mo = +mo; d = +d; if (y < 2000 || y > 2100 || mo < 1 || mo > 12 || d < 1 || d > 31) return undefined; return `${y}-${pad2(mo)}-${pad2(d)}`; };
+  if ((m = s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/))) return ok(m[1], m[2], m[3]);
+  if ((m = s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})/))){ const a = +m[1], b = +m[2]; if (a > 12) return ok(m[3], b, a); if (b > 12) return ok(m[3], a, b); return ok(m[3], b, a); }
+  if ((m = s.match(/^(\d{1,2})[\s\-]([A-Za-z]{3,9})[\s\-,]+(\d{2,4})/))){ const mo = MON[m[2].slice(0, 3).toLowerCase()]; return mo ? ok(m[3], mo, m[1]) : undefined; }
+  if ((m = s.match(/^([A-Za-z]{3,9})[\s\-]+(\d{1,2}),?[\s\-]+(\d{2,4})/))){ const mo = MON[m[1].slice(0, 3).toLowerCase()]; return mo ? ok(m[3], mo, m[2]) : undefined; }
+  if (/^\d{5}(\.\d+)?$/.test(s)) return pdate(parseFloat(s));
+  return undefined;
+}
+
+/* ======================= constants ======================= */
+const PLAT = { m: { name: 'Meesho', cls: 'pm' }, f: { name: 'Flipkart', cls: 'pf' }, x: { name: 'Other', cls: 'px' } };
+const STATUS = {
+  pending: 'Pending', shipped: 'Shipped', delivered: 'Delivered', rto: 'RTO', return: 'Return', cancelled: 'Cancelled', lost: 'Lost'
+};
+const STATUS_HELP = {
+  pending: 'Order received, not shipped yet', shipped: 'On the way to the customer', delivered: 'Customer received it',
+  rto: 'Courier brought it back (not delivered)', return: 'Customer returned it', cancelled: 'Cancelled before shipping', lost: 'Lost or damaged by courier'
+};
+const EXP_CATS = [
+  ['pack', 'Packing material'], ['ship', 'Shipping & courier'], ['ads', 'Ads & promotion'], ['fees', 'Platform charges & penalties'],
+  ['photo', 'Photos & catalog'], ['travel', 'Transport & travel'], ['rent', 'Rent & storage'], ['labour', 'Salary & labour'],
+  ['phone', 'Phone & internet'], ['soft', 'Software & tools'], ['other', 'Other']
+];
+const EXP_NAME = Object.fromEntries(EXP_CATS);
+const ADJ_WHY = [['count', 'Stock count correction'], ['damaged', 'Damaged / unusable'], ['sample', 'Used as sample or gift'], ['found', 'Found extra stock'], ['other', 'Other']];
+const DEF = { biz: '', packing: 5, low: 5, fee: 25 };
+const ORD_PARTS = 8;
+
+/* ======================= store ======================= */
+const st = {
+  phase: 'loading', db: null, assets: null, dl: null,
+  products: {}, chunks: {}, exp: {}, stk: {}, stats: {}, settings: { ...DEF },
+  cutoff: addMonths(monthOf(today()), -12), extra: new Set(), allLoaded: false,
+  ready: { p: false, o: false, m: false }, sample: false, err: '', v: 0
+};
+const listeners = new Set();
+let dcache = null;
+function emit(){ st.v++; dcache = null; listeners.forEach(f => f()); }
+function useStoreV(){ return useSyncExternalStore(f => { listeners.add(f); return () => listeners.delete(f); }, () => st.v); }
+const isLoadedSt = m => st.allLoaded || m >= st.cutoff || st.extra.has(m);
+
+function checkReady(){ if (st.phase === 'loading' && st.ready.p && st.ready.o && st.ready.m) st.phase = 'live'; }
+
+async function init(){
+  const c = window.claude;
+  if (!c || typeof c.use !== 'function'){ st.phase = 'nodb'; emit(); return; }
+  let db = null, assets = null, dl = null;
+  try { [db, assets, dl] = await Promise.all([c.use('db'), c.use('assets'), c.use('downloads')]); } catch (e) { console.warn(e); }
+  st.db = db; st.assets = assets; st.dl = dl;
+  if (!db){ st.phase = 'nodb'; emit(); return; }
+  const onErr = what => e => { console.warn(what, e); st.err = `Couldn't load your ${what}${e && e.code ? ' (' + e.code + ')' : ''}. Reload the page to try again.`; if (st.phase === 'loading') st.phase = 'live'; emit(); };
+  db.collection('products').onSnapshot(snap => {
+    const m = {}; snap.docs.forEach(d => { if (d.exists) m[d.id] = { ...d.data(), id: d.id }; });
+    st.products = m; st.ready.p = true; checkReady(); emit();
+  }, onErr('products'));
+  db.collection('ord').where('m', '>=', st.cutoff).limit(1000).onSnapshot(snap => {
+    const live = {}; snap.docs.forEach(d => { if (d.exists) live[d.id] = d.data(); });
+    for (const id of Object.keys(st.chunks)){ if ((st.chunks[id].m || '') >= st.cutoff && !live[id]) delete st.chunks[id]; }
+    Object.assign(st.chunks, live); st.ready.o = true; checkReady(); emit();
+  }, onErr('orders'));
+  const monthColl = key => snap => { const m = {}; snap.docs.forEach(d => { if (d.exists) m[d.id] = d.data(); }); st[key] = m; emit(); };
+  db.collection('exp').limit(1000).onSnapshot(monthColl('exp'), onErr('expenses'));
+  db.collection('stk').limit(1000).onSnapshot(monthColl('stk'), onErr('stock history'));
+  db.collection('stats').limit(1000).onSnapshot(monthColl('stats'), onErr('monthly totals'));
+  db.doc('meta/settings').onSnapshot(d => { st.settings = { ...DEF, ...(d.exists ? d.data() : {}) }; st.ready.m = true; checkReady(); emit(); }, onErr('settings'));
+  setTimeout(() => { if (st.phase === 'loading'){ st.phase = 'live'; st.err = 'Your data is taking long to load. Check your connection.'; emit(); } }, 15000);
+}
+
+/* ---------- writes ---------- */
+const queues = new Map();
+function enqueue(path, fn){
+  const prev = queues.get(path) || Promise.resolve();
+  const p = prev.catch(() => {}).then(fn);
+  queues.set(path, p);
+  p.then(() => { if (queues.get(path) === p) queues.delete(path); }, () => { if (queues.get(path) === p) queues.delete(path); });
+  return p;
+}
+async function withRetry(fn){
+  try { return await fn(); }
+  catch (e){ if (e && e.code === 'unavailable'){ await new Promise(r => setTimeout(r, 400 + Math.random() * 700)); return fn(); } throw e; }
+}
+function requireDb(){ if (st.sample) throw { code: 'sample' }; if (!st.db) throw { code: 'nodb' }; }
+async function putDoc(path, data){ requireDb(); return enqueue(path, () => withRetry(() => st.db.doc(path).set(strip(data)))); }
+async function rmDoc(path){ requireDb(); return enqueue(path, () => withRetry(() => st.db.doc(path).delete())); }
+
+async function saveProduct(p){
+  requireDb();
+  const id = p.id || uid('p');
+  const doc = strip({ ...p, id, upd: Date.now(), created: p.created || Date.now() });
+  await putDoc('products/' + id, doc);
+  st.products = { ...st.products, [id]: doc }; emit();
+  return id;
+}
+async function deleteProduct(id){
+  requireDb();
+  const p = st.products[id];
+  await rmDoc('products/' + id);
+  const m = { ...st.products }; delete m[id]; st.products = m; emit();
+  if (p && p.images && st.assets){ for (const a of p.images){ try { await st.assets.delete(a); } catch (e) { console.warn(e); } } }
+}
+async function saveSettings(patch){
+  requireDb();
+  const next = { ...st.settings, ...patch };
+  await putDoc('meta/settings', next);
+  st.settings = next; emit();
+}
+async function putItem(coll, item){
+  requireDb();
+  const m = monthOf(item.d);
+  const cur = st[coll][m];
+  const doc = { m, items: { ...(cur && cur.items || {}), [item.id]: strip(item) } };
+  await putDoc(coll + '/' + m, doc);
+  st[coll] = { ...st[coll], [m]: doc }; emit();
+}
+async function removeItem(coll, item){
+  requireDb();
+  const m = monthOf(item.d); const cur = st[coll][m];
+  if (!cur || !cur.items || !cur.items[item.id]) return;
+  const items = { ...cur.items }; delete items[item.id];
+  if (Object.keys(items).length){ const doc = { m, items }; await putDoc(coll + '/' + m, doc); st[coll] = { ...st[coll], [m]: doc }; }
+  else { await rmDoc(coll + '/' + m); const c2 = { ...st[coll] }; delete c2[m]; st[coll] = c2; }
+  emit();
+}
+async function updateItem(coll, oldItem, item){
+  if (oldItem && monthOf(oldItem.d) !== monthOf(item.d)) await removeItem(coll, oldItem);
+  await putItem(coll, item);
+}
+
+/* ---------- orders ---------- */
+const chunkId = (p, m, id) => `${p}-${m.replace('-', '')}-${hashStr(id) % ORD_PARTS}`;
+function orderIndex(){ const idx = new Map(); for (const [cid, ch] of Object.entries(st.chunks)) for (const k of Object.keys(ch.rows || {})) idx.set(ch.p + ':' + k, cid); return idx; }
+function getOrder(p, i){ const cid = orderIndex().get(p + ':' + i); return cid ? st.chunks[cid].rows[i] : null; }
+function ordersOfMonth(m){ const out = []; for (const ch of Object.values(st.chunks)) if (ch.m === m) for (const o of Object.values(ch.rows || {})) out.push(o); return out; }
+
+async function ensureMonths(ms){
+  requireDb();
+  const need = [...new Set(ms)].filter(m => m && !isLoadedSt(m));
+  for (const m of need){
+    const snap = await withRetry(() => st.db.collection('ord').where('m', '==', m).limit(1000).get());
+    snap.docs.forEach(d => { if (d.exists) st.chunks[d.id] = d.data(); });
+    st.extra.add(m);
+  }
+  if (need.length) emit();
+}
+async function loadAllMonths(){
+  requireDb();
+  const snap = await withRetry(() => st.db.collection('ord').limit(1000).get());
+  snap.docs.forEach(d => { if (d.exists) st.chunks[d.id] = d.data(); });
+  st.allLoaded = true; emit();
+}
+async function commitOrders(edits, onProg){
+  requireDb();
+  const idx = orderIndex(); const work = new Map(); const months = new Set();
+  const getWork = cid => {
+    if (!work.has(cid)){
+      const cur = st.chunks[cid]; const [p, mm, k] = cid.split('-');
+      work.set(cid, cur ? { ...cur, rows: { ...(cur.rows || {}) } } : { p, m: mm.slice(0, 4) + '-' + mm.slice(4), k: Number(k), rows: {} });
+    }
+    return work.get(cid);
+  };
+  for (const e of edits){
+    const oldCid = idx.get(e.p + ':' + e.i);
+    if (oldCid){ const w = getWork(oldCid); delete w.rows[e.i]; months.add(w.m); }
+    if (e.next){ const m = monthOf(e.next.d); const cid = chunkId(e.p, m, e.i); getWork(cid).rows[e.i] = strip(e.next); months.add(m); idx.set(e.p + ':' + e.i, cid); }
+    else idx.delete(e.p + ':' + e.i);
+  }
+  let n = 0;
+  for (const [cid, doc] of work){
+    if (!Object.keys(doc.rows).length){ if (st.chunks[cid]){ await rmDoc('ord/' + cid); delete st.chunks[cid]; } }
+    else {
+      if (JSON.stringify(doc).length > 245000) throw { code: 'chunk_full' };
+      await putDoc('ord/' + cid, doc); st.chunks[cid] = doc;
+    }
+    n++; if (onProg) onProg(n, work.size); emit();
+  }
+  await refreshStats([...months]);
+}
+async function refreshStats(months){
+  for (const m of months){
+    if (!isLoadedSt(m)) continue;
+    const s = computeMonthStats(m, ordersOfMonth(m), st.products, st.settings);
+    if (!s.n && !s.can){ if (st.stats[m]){ await rmDoc('stats/' + m); const c = { ...st.stats }; delete c[m]; st.stats = c; } }
+    else { await putDoc('stats/' + m, s); st.stats = { ...st.stats, [m]: s }; }
+  }
+  emit();
+}
+
+/* ======================= calculations ======================= */
+function orderCalc(o, products, settings){
+  const q = Math.max(1, Number(o.q) || 1);
+  const p = o.pid ? products[o.pid] : null;
+  const has = v => v != null && v !== '';
+  const uc = has(o.uc) ? Number(o.uc) : (p ? Number(p.cost) || 0 : 0);
+  const pk = has(o.pk) ? Number(o.pk) : (p && has(p.packing) ? Number(p.packing) : Number(settings.packing) || 0);
+  const stt = STATUS[o.st] ? o.st : 'pending';
+  const paid = !!(o.set && Object.keys(o.set).length);
+  const recv = paid ? sumSet(o.set) : 0;
+  let expected = 0, est = '';
+  if (!paid && (stt === 'pending' || stt === 'shipped' || stt === 'delivered')){
+    const po = p && p.payout ? Number(p.payout[o.p]) : 0;
+    if (po > 0){ expected = po * q; est = 'product'; }
+    else if (Number(o.s) > 0){ expected = Number(o.s) * (1 - (Number(settings.fee) || 0) / 100); est = 'fee'; }
+  }
+  let cost = 0;
+  if (stt !== 'cancelled'){ cost = pk * q; const back = (stt === 'rto' || stt === 'return') && o.rs !== false; if (!back) cost += uc * q; }
+  const income = paid ? recv : expected;
+  return { q, uc, pk, st: stt, paid, recv, expected: round2(expected), est, income: round2(income), cost: round2(cost), profit: round2(income - cost), noCost: !!p && !(Number(p.cost) > 0), unlinked: !p };
+}
+function computeMonthStats(m, orders, products, settings){
+  const s = { m, n: 0, can: 0, q: 0, sale: 0, recv: 0, expd: 0, cost: 0, profit: 0, rto: 0, ret: 0, out: {}, back: {}, plat: {}, u: Date.now() };
+  for (const o of orders){
+    const c = orderCalc(o, products, settings);
+    if (c.st === 'cancelled'){ s.can++; continue; }
+    s.n++; s.q += c.q; s.sale += Number(o.s) || 0;
+    if (c.paid) s.recv += c.recv; else s.expd += c.expected;
+    s.cost += c.cost; s.profit += c.profit;
+    if (c.st === 'rto') s.rto++; if (c.st === 'return') s.ret++;
+    if (o.pid){ s.out[o.pid] = (s.out[o.pid] || 0) + c.q; if ((c.st === 'rto' || c.st === 'return') && o.rs !== false) s.back[o.pid] = (s.back[o.pid] || 0) + c.q; }
+    const pl = s.plat[o.p] || (s.plat[o.p] = { n: 0, inc: 0, profit: 0 }); pl.n++; pl.inc = round2(pl.inc + c.income); pl.profit = round2(pl.profit + c.profit);
+  }
+  for (const k of ['sale', 'recv', 'expd', 'cost', 'profit']) s[k] = round2(s[k]);
+  return s;
+}
+
+function derive(){
+  if (dcache) return dcache;
+  const src = st.sample ? sampleData() : st;
+  const products = src.products, settings = src.settings;
+  const isLoaded = st.sample ? (() => true) : isLoadedSt;
+  const orders = [];
+  for (const ch of Object.values(src.chunks)) for (const o of Object.values(ch.rows || {})) orders.push(o);
+  orders.sort((a, b) => (b.d || '').localeCompare(a.d || '') || String(b.i).localeCompare(String(a.i)));
+  const calc = new Map(), byKey = new Map(), byMonth = new Map();
+  for (const o of orders){
+    calc.set(o, orderCalc(o, products, settings)); byKey.set(o.p + ':' + o.i, o);
+    const m = monthOf(o.d); if (!byMonth.has(m)) byMonth.set(m, []); byMonth.get(m).push(o);
+  }
+  const stock = {}, sold30 = {};
+  for (const p of Object.values(products)) stock[p.id] = Number(p.open) || 0;
+  const moves = [];
+  for (const doc of Object.values(src.stk)) for (const it of Object.values(doc.items || {})){ moves.push(it); if (stock[it.pid] != null) stock[it.pid] += Number(it.q) || 0; }
+  moves.sort((a, b) => (b.d || '').localeCompare(a.d || ''));
+  const d30 = addDays(today(), -29);
+  for (const o of orders){
+    const c = calc.get(o);
+    if (!o.pid || stock[o.pid] == null || c.st === 'cancelled') continue;
+    stock[o.pid] -= c.q;
+    if ((c.st === 'rto' || c.st === 'return') && o.rs !== false) stock[o.pid] += c.q;
+    else if (o.d >= d30) sold30[o.pid] = (sold30[o.pid] || 0) + c.q;
+  }
+  for (const [m, s] of Object.entries(src.stats)){
+    if (isLoaded(m)) continue;
+    for (const [pid, q] of Object.entries(s.out || {})) if (stock[pid] != null) stock[pid] -= q;
+    for (const [pid, q] of Object.entries(s.back || {})) if (stock[pid] != null) stock[pid] += q;
+  }
+  const expenses = [];
+  for (const doc of Object.values(src.exp)) for (const it of Object.values(doc.items || {})) expenses.push(it);
+  expenses.sort((a, b) => (b.d || '').localeCompare(a.d || '') || String(b.id).localeCompare(String(a.id)));
+  const skuMap = new Map();
+  for (const p of Object.values(products)) for (const s of (p.skus || [])) skuMap.set(normSku(s), p.id);
+  const plist = Object.values(products).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  dcache = { products, plist, settings, orders, calc, byKey, byMonth, stock, sold30, moves, expenses, stats: src.stats, isLoaded, skuMap };
+  return dcache;
+}
+function lowAt(p, settings){ return p.low != null && p.low !== '' ? Number(p.low) : Number(settings.low) || 0; }
+function stockState(p, D){ const q = D.stock[p.id] || 0; if (q <= 0) return 'out'; if (q <= lowAt(p, D.settings)) return 'low'; return 'ok'; }
+
+const PERIODS = [['today', 'Today'], ['7d', '7 days'], ['month', 'This month'], ['lastmonth', 'Last month'], ['90d', '90 days'], ['fy', 'This FY']];
+function periodRange(k){
+  const t = today(), ym = monthOf(t);
+  switch (k){
+    case 'today': return { k, from: t, to: t, label: 'Today', bucket: 'day' };
+    case '7d': return { k, from: addDays(t, -6), to: t, label: 'Last 7 days', bucket: 'day' };
+    case 'lastmonth': { const pm = addMonths(ym, -1); return { k, from: pm + '-01', to: addDays(ym + '-01', -1), label: monthLabel(pm), bucket: 'day' }; }
+    case '90d': return { k, from: addDays(t, -89), to: t, label: 'Last 90 days', bucket: 'day' };
+    case 'fy': { const [y, m] = ym.split('-').map(Number); const fy = m >= 4 ? y : y - 1; return { k, from: fy + '-04-01', to: t, label: `FY ${fy}–${String(fy + 1).slice(2)}`, bucket: 'month' }; }
+    default: return { k: 'month', from: ym + '-01', to: t, label: monthLabel(ym), bucket: 'day' };
+  }
+}
+function summarize(D, R){
+  const { from, to } = R;
+  const T = { all: 0, n: 0, can: 0, q: 0, qSold: 0, sale: 0, recv: 0, expd: 0, cost: 0, profit: 0, rto: 0, ret: 0, exp: 0, unlinked: 0, plat: {}, prod: new Map(), noCost: new Set(), estFee: 0 };
+  const bk = new Map();
+  if (R.bucket === 'month'){ for (let m = monthOf(from); m <= monthOf(to); m = addMonths(m, 1)) bk.set(m, { key: m, label: monthShort(m), inc: 0, profit: 0, n: 0 }); }
+  else { for (let d = from; d <= to; d = addDays(d, 1)) bk.set(d, { key: d, label: dayLabel(d), inc: 0, profit: 0, n: 0 }); }
+  for (const o of D.orders){
+    const d = o.d; if (!d || d < from || d > to) continue;
+    const c = D.calc.get(o); T.all++;
+    if (c.st === 'cancelled'){ T.can++; continue; }
+    T.n++; T.q += c.q; if (c.st !== 'rto' && c.st !== 'return' && c.st !== 'lost') T.qSold += c.q;
+    T.sale += Number(o.s) || 0;
+    if (c.paid) T.recv += c.recv; else T.expd += c.expected;
+    if (c.est === 'fee') T.estFee++;
+    T.cost += c.cost; T.profit += c.profit;
+    if (c.st === 'rto') T.rto++; if (c.st === 'return') T.ret++;
+    if (c.unlinked) T.unlinked++; if (c.noCost) T.noCost.add(o.pid);
+    const pl = T.plat[o.p] || (T.plat[o.p] = { n: 0, inc: 0, profit: 0 }); pl.n++; pl.inc += c.income; pl.profit += c.profit;
+    const b = bk.get(R.bucket === 'month' ? monthOf(d) : d); if (b){ b.inc += c.income; b.profit += c.profit; b.n++; }
+    const key = o.pid || ('u:' + normSku(o.sku || o.t || '?'));
+    const pr = T.prod.get(key) || { key, pid: o.pid, name: (o.pid && D.products[o.pid] && D.products[o.pid].name) || o.t || o.sku || 'Unlinked item', q: 0, n: 0, inc: 0, profit: 0, back: 0 };
+    pr.n++; pr.q += c.q; pr.inc += c.income; pr.profit += c.profit; if (c.st === 'rto' || c.st === 'return') pr.back++;
+    T.prod.set(key, pr);
+  }
+  for (const e of D.expenses) if (e.d >= from && e.d <= to) T.exp += Number(e.a) || 0;
+  T.income = T.recv + T.expd; T.net = T.profit - T.exp; T.buckets = [...bk.values()];
+  return T;
+}
+function allTime(D){
+  let invested = 0, buys = 0;
+  for (const p of Object.values(D.products)) invested += (Number(p.open) || 0) * (Number(p.cost) || 0);
+  for (const mv of D.moves) if (mv.k === 'buy'){ invested += Number(mv.c) || 0; buys++; }
+  let exp = 0; for (const e of D.expenses) exp += Number(e.a) || 0;
+  let recv = 0, expd = 0;
+  for (const o of D.orders){ const c = D.calc.get(o); if (c.st === 'cancelled') continue; if (c.paid) recv += c.recv; else expd += c.expected; }
+  for (const [m, s] of Object.entries(D.stats)) if (!D.isLoaded(m)){ recv += s.recv || 0; expd += s.expd || 0; }
+  let stockVal = 0, units = 0;
+  for (const p of Object.values(D.products)){ const q = Math.max(0, D.stock[p.id] || 0); units += q; stockVal += q * (Number(p.cost) || 0); }
+  return { invested, exp, recv, expd, stockVal, units, buys, net: recv + expd + stockVal - invested - exp };
+}
+function unpaidOld(D){
+  const lim = addDays(today(), -14); let n = 0, amt = 0;
+  for (const o of D.orders){ const c = D.calc.get(o); if (c.st === 'delivered' && !c.paid && o.d && o.d <= lim){ n++; amt += c.expected; } }
+  return { n, amt };
+}
+
+/* ======================= sample data ======================= */
+let SAMPLE = null;
+function sampleData(){
+  if (SAMPLE) return SAMPLE;
+  let seed = 20261021;
+  const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+  const P = [
+    { id: 's1', name: 'Ice Roller for Face (Pack of 2)', skus: ['IR-P2-PURPLE'], cat: 'Beauty', cost: 42, packing: 5, open: 120, low: 20, price: { m: 159, f: 149 }, payout: { m: 121, f: 104 }, w: 3.2 },
+    { id: 's2', name: 'Face Icing Kit (2 Rollers + Bowl)', skus: ['ICE-KIT-3'], cat: 'Beauty', cost: 78, packing: 6, open: 70, low: 10, price: { m: 229, f: 219 }, payout: { m: 168, f: 152 }, w: 1.2 },
+    { id: 's3', name: 'Twist Corn Peeler', skus: ['CORN-TWIST'], cat: 'Kitchen', cost: 22, packing: 4, open: 220, low: 25, price: { m: 119 }, payout: { m: 88 }, w: 2.4 },
+    { id: 's4', name: 'Silicone Scalp Massager', skus: ['SCALP-WHT'], cat: 'Personal care', cost: 18, packing: 4, open: 150, low: 15, price: { m: 109, f: 99 }, payout: { m: 79, f: 66 }, w: 1.6 },
+    { id: 's5', name: 'Glass Oil Dispenser (Press Top)', skus: ['OIL-PRESS-500'], cat: 'Kitchen', cost: 64, packing: 12, open: 30, low: 10, price: { m: 219 }, payout: { m: 152 }, w: 0.7 },
+    { id: 's6', name: '3-in-1 Rotary Peeler', skus: ['ROT-PEEL-3'], cat: 'Kitchen', cost: 55, packing: 6, open: 30, low: 10, price: { f: 199 }, payout: { f: 131 }, w: 0.5 }
+  ];
+  const products = {}; P.forEach(p => { const { w, ...rest } = p; products[p.id] = { ...rest, images: [], active: true }; });
+  const chunks = {}; const t = today(); let n = 0;
+  for (let back = 74; back >= 0; back--){
+    const d = addDays(t, -back);
+    for (const p of P){
+      for (const pl of ['m', 'f']){
+        if (!p.payout[pl]) continue;
+        const lam = p.w * (pl === 'm' ? 1 : 0.55) * (0.6 + rnd() * 0.8);
+        let k = Math.floor(lam + rnd() - 0.3);
+        while (k-- > 0){
+          n++; const id = (pl === 'm' ? '1903' : 'OD4') + String(5000000 + n * 37);
+          const r = rnd(); let s;
+          if (back > 10) s = r < .80 ? 'delivered' : r < .89 ? 'rto' : r < .95 ? 'return' : 'cancelled';
+          else if (back > 3) s = r < .55 ? 'delivered' : r < .9 ? 'shipped' : r < .95 ? 'rto' : 'cancelled';
+          else s = r < .5 ? 'pending' : r < .95 ? 'shipped' : 'cancelled';
+          const q = rnd() < .08 ? 2 : 1;
+          const o = { i: id, p: pl, d, pid: p.id, sku: p.skus[0], q, s: p.price[pl] * q, st: s, rs: true, src: 'imp' };
+          if (back > 9){
+            if (s === 'delivered') o.set = { s: round2(p.payout[pl] * q - (rnd() < .2 ? 3 : 0)) };
+            else if (s === 'rto') o.set = { s: 0 };
+            else if (s === 'return') o.set = { s: -Math.round(45 + rnd() * 30) };
+          }
+          const cid = chunkId(pl, monthOf(d), id);
+          (chunks[cid] = chunks[cid] || { p: pl, m: monthOf(d), k: 0, rows: {} }).rows[id] = o;
+        }
+      }
+    }
+  }
+  const exp = {}, stk = {};
+  const addE = (d, c, a, nn) => { const m = monthOf(d); (exp[m] = exp[m] || { m, items: {} }).items['e' + d + c] = { id: 'e' + d + c, d, c, a, n: nn }; };
+  const addS = (d, pid, q, c, k, sup) => { const m = monthOf(d); (stk[m] = stk[m] || { m, items: {} }).items['k' + d + pid] = { id: 'k' + d + pid, d, pid, q, c, k, sup }; };
+  for (let back = 70; back >= 0; back -= 7) addE(addDays(t, -back), 'ads', 350 + Math.round(rnd() * 250), 'Meesho ads');
+  for (let back = 60; back >= 0; back -= 30){ addE(addDays(t, -back - 2), 'pack', 1200 + Math.round(rnd() * 400), 'Polybags, tape, bubble wrap'); addE(addDays(t, -back - 1), 'phone', 399, 'Mobile recharge'); }
+  addE(addDays(t, -20), 'travel', 260, 'Rickshaw to supplier');
+  addS(addDays(t, -40), 's1', 200, 8200, 'buy', 'Relief Road wholesaler');
+  addS(addDays(t, -25), 's3', 150, 3150, 'buy', 'Kalupur market');
+  addS(addDays(t, -12), 's2', 40, 3080, 'buy', 'Surat supplier');
+  addS(addDays(t, -8), 's4', -2, 0, 'adj', '');
+  SAMPLE = { products, chunks, exp, stk, stats: {}, settings: { ...DEF, biz: 'Sample store' } };
+  return SAMPLE;
+}
+function setSample(on){ st.sample = !!on; emit(); }
+
+/* ======================= import parsing ======================= */
+const FIELDS = [
+  { k: 'id', label: 'Order item ID', help: 'Sub Order No (Meesho) or Order item ID (Flipkart)', req: true, pats: [/^suborderno$/, /^subordernumber$/, /^suborderid$/, /^orderitemid$/, /^orderitemno$/, /^suborder/, /^orderitem/, /^itemid$/] },
+  { k: 'oid', label: 'Order ID', pats: [/^orderid$/, /^orderno$/, /^ordernumber$/, /^orderref/] },
+  { k: 'date', label: 'Order date', pats: [/^orderdate$/, /^orderdatetime$/, /^orderedon$/, /^orderplaced(date|on)?$/, /^dateoforder$/, /^orderdate/, /^orderedat$/, /^orderapprovaldate$/] },
+  { k: 'sku', label: 'SKU', pats: [/^suppliersku$/, /^sellersku$/, /^sku$/, /^skuid$/, /^skucode$/, /sku/] },
+  { k: 'title', label: 'Product name', pats: [/^productname$/, /^producttitle$/, /^title$/, /^itemname$/, /^product$/, /^productname/, /^itemdescription$/] },
+  { k: 'qty', label: 'Quantity', pats: [/^quantity$/, /^qty$/, /^units$/, /^quantity/, /^noofitems$/] },
+  { k: 'sale', label: 'Sale amount', help: 'What the customer paid', pats: [/^totalsaleamount/, /^saleamount/, /^supplierdiscountedprice/, /^supplierlistedprice/, /^sellingprice/, /^listingprice/, /^orderamount/, /^invoiceamount/, /^ordervalue/, /^finalcustomerprice/, /^price$/] },
+  { k: 'settle', label: 'Payout (you get)', help: 'Final settlement amount', pats: [/^finalsettlementamount/, /^banksettlementvalue/, /^settlementamount/, /^settlementvalue/, /^netsettlement/, /^netpayout/, /^netamount$/, /^amountsettled/, /^payoutamount/] },
+  { k: 'tx', label: 'Payment reference', help: 'Transaction / NEFT ID', pats: [/^transactionid$/, /^neftid$/, /^utr/, /^paymentid$/, /^paymentref/, /^neftref/] },
+  { k: 'pdate', label: 'Payment date', pats: [/^paymentdate$/, /^settlementdate$/, /^transactiondate$/, /^neftdate$/, /^paymentdate/, /^dateofpayment/, /^settleddate/] },
+  { k: 'status', label: 'Order status', pats: [/^liveorderstatus$/, /^reasonforcreditentry$/, /^orderitemstatus$/, /^orderstatus$/, /^itemstatus$/, /^status$/, /^orderstate$/, /status$/] }
+];
+const normH = h => String(h == null ? '' : h).toLowerCase().replace(/[^a-z0-9]/g, '');
+function mapHeaders(hdr){
+  const map = {}, used = new Set();
+  for (const f of FIELDS){
+    let best = -1, rank = 1e9;
+    hdr.forEach((h, ci) => { if (!h || used.has(ci)) return; f.pats.forEach((re, ri) => { if (ri < rank && re.test(h)){ rank = ri; best = ci; } }); });
+    if (best >= 0){ map[f.k] = best; used.add(best); }
+  }
+  return map;
+}
+function detectSheet(sheet){
+  let best = { hr: 0, map: {}, score: 0 };
+  const lim = Math.min(sheet.text.length, 30);
+  for (let r = 0; r < lim; r++){
+    const hdr = (sheet.text[r] || []).map(normH);
+    const map = mapHeaders(hdr);
+    const score = Object.keys(map).length + (map.id != null ? 3 : 0);
+    if (score > best.score) best = { hr: r, map, score };
+  }
+  return best;
+}
+function guessPlat(sheet, hr){
+  const s = (sheet.text[hr] || []).map(normH).join(' ');
+  if (/suborderno|reasonforcreditentry|liveorderstatus|suppliersku|finalsettlementamount/.test(s)) return 'm';
+  if (/orderitemid|neftid|banksettlementvalue|sellersku|\bfsn\b/.test(s)) return 'f';
+  return null;
+}
+function cleanId(v){
+  let s = String(v == null ? '' : v).trim().replace(/^'+/, '').replace(/^OI:/i, '').replace(/\s+/g, '');
+  if (!/\d{4,}/.test(s) || s.length > 64) return '';
+  return s;
+}
+function normStatus(raw){
+  const s = String(raw || '').toLowerCase();
+  if (!s.trim()) return undefined;
+  if (/cancel/.test(s)) return 'cancelled';
+  if (/\brto\b|rto_|return.?to.?origin|undeliver|not.?deliver/.test(s)) return 'rto';
+  if (/return/.test(s)) return 'return';
+  if (/lost|damag/.test(s)) return 'lost';
+  if (/out.?for.?deliver|transit/.test(s)) return 'shipped';
+  if (/deliver|complete|exchange/.test(s)) return 'delivered';
+  if (/ready|pending|approv|hold|pack|placed|confirm|\bnew\b|label|manifest|accept/.test(s)) return 'pending';
+  if (/ship|dispatch|picked|pickup/.test(s)) return 'shipped';
+  return 'pending';
+}
+function buildRows(sheet, hr, map){
+  const out = new Map(); const dup = new Map();
+  let total = 0, bad = 0, sci = 0, noDate = 0;
+  if (map.id == null) return { rows: [], total, bad, sci, noDate };
+  for (let r = hr + 1; r < sheet.text.length; r++){
+    const T = sheet.text[r] || [], R = sheet.raw[r] || [];
+    const idRaw = T[map.id];
+    if (idRaw == null || String(idRaw).trim() === '') continue;
+    total++;
+    if (/^\d+(\.\d+)?e\+?\d+$/i.test(String(idRaw).trim())){ sci++; continue; }
+    const id = cleanId(idRaw); if (!id){ bad++; continue; }
+    const tv = k => map[k] != null ? T[map[k]] : undefined;
+    const rv = k => map[k] != null ? R[map[k]] : undefined;
+    const o = out.get(id) || { i: id, settles: {} };
+    if (map.oid != null){ const x = cleanText(tv('oid')); if (x) o.o = x.slice(0, 40); }
+    if (map.date != null){ const x = pdate(rv('date')) || pdate(tv('date')); if (x && !o.d) o.d = x; }
+    if (map.sku != null){ const x = cleanText(tv('sku')); if (x) o.sku = x.slice(0, 60); }
+    if (map.title != null){ const x = cleanText(tv('title')); if (x) o.t = x.slice(0, 80); }
+    if (map.qty != null){ const x = num(rv('qty')); const y = x != null ? x : num(tv('qty')); if (y > 0) o.q = Math.max(o.q || 0, Math.round(y)); }
+    if (map.sale != null){ const x = num(rv('sale')); const y = x != null ? x : num(tv('sale')); if (y > 0 && !(o.s > 0)) o.s = round2(y); }
+    if (map.status != null){ const raw = cleanText(tv('status')); const x = normStatus(raw); if (x){ o.st = x; o.sr = raw.slice(0, 30); } }
+    let pd;
+    if (map.pdate != null){ pd = pdate(rv('pdate')) || pdate(tv('pdate')); if (pd && (!o.pd || pd > o.pd)) o.pd = pd; }
+    if (map.settle != null){
+      const cell = tv('settle');
+      if (cell != null && String(cell).trim() !== ''){
+        const a0 = num(rv('settle')); const a = a0 != null ? a0 : num(cell);
+        if (a != null){
+          const tx = map.tx != null ? cleanText(tv('tx')) : '';
+          let key = (tx || pd || 'pay') + '|' + round2(a);
+          const dk = id + '#' + key; const c = dup.get(dk) || 0; dup.set(dk, c + 1); if (c) key += '|' + c;
+          o.settles[key.slice(0, 90)] = round2(a);
+        }
+      }
+    }
+    if (!o.d) noDate++;
+    out.set(id, o);
+  }
+  const rows = [...out.values()];
+  return { rows, total, bad, sci, noDate: rows.filter(x => !x.d).length };
+}
+function parseCSV(text){
+  text = text.replace(/^﻿/, '');
+  const first = (text.slice(0, 4000).split(/\r?\n/)[0]) || '';
+  const delim = [',', ';', '\t'].map(d => [d, first.split(d).length]).sort((a, b) => b[1] - a[1])[0][0];
+  const rows = []; let row = [], cell = '', q = false;
+  for (let i = 0; i < text.length; i++){
+    const ch = text[i];
+    if (q){ if (ch === '"'){ if (text[i + 1] === '"'){ cell += '"'; i++; } else q = false; } else cell += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === delim){ row.push(cell); cell = ''; }
+    else if (ch === '\n' || ch === '\r'){ if (ch === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+    else cell += ch;
+  }
+  if (cell !== '' || row.length){ row.push(cell); rows.push(row); }
+  return rows.map(r => r.map(c => c.trim()));
+}
+let xlsxP = null;
+function loadXLSX(){
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  if (!xlsxP) xlsxP = new Promise((res, rej) => {
+    const s = document.createElement('script'); s.src = XLSX_URL; s.async = true;
+    s.onload = () => window.XLSX ? res(window.XLSX) : rej(new Error('The Excel reader didn’t load. Try again, or upload the CSV version.'));
+    s.onerror = () => { xlsxP = null; rej(new Error('Couldn’t load the Excel reader. Check your internet and try again, or upload a CSV file.')); };
+    document.head.appendChild(s);
+  });
+  return xlsxP;
+}
+async function readFile(file){
+  const name = file.name || 'file'; const ext = (name.split('.').pop() || '').toLowerCase();
+  if (ext === 'csv' || ext === 'txt' || file.type === 'text/csv'){
+    const rows = parseCSV(await file.text());
+    return { name, sheets: [{ name: 'CSV', text: rows, raw: rows }] };
+  }
+  if (['xlsx', 'xls', 'xlsm', 'xlsb', 'ods'].includes(ext)){
+    const XLSX = await loadXLSX();
+    const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+    const sheets = wb.SheetNames.map(n => {
+      const ws = wb.Sheets[n];
+      return { name: n, text: XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '', blankrows: true }), raw: XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '', blankrows: true }) };
+    }).filter(s => s.text.length);
+    return { name, sheets };
+  }
+  throw new Error('Upload a .csv or .xlsx file downloaded from your seller panel.');
+}
+const colName = i => { let s = ''; i++; while (i > 0){ const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
+
+/* ======================= files out ======================= */
+function toCSV(rows){ return rows.map(r => r.map(v => { const s = v == null ? '' : String(v); return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(',')).join('\r\n'); }
+async function saveFile(filename, data){
+  if (!st.dl){
+    try { await navigator.clipboard.writeText(typeof data === 'string' ? data : ''); toast('Downloads aren’t available here, so the data was copied to your clipboard.'); }
+    catch (e) { toast('Downloads aren’t available in this view.', 'bad'); }
+    return;
+  }
+  if (typeof data === 'string' && /\.csv$/i.test(filename) && data.charCodeAt(0) !== 0xFEFF) data = '\uFEFF' + data;
+  try { const r = await st.dl.save({ filename, data }); toast(r && r.status === 'delivered' ? 'File sent' : 'File saved'); }
+  catch (e){ if (e && e.code === 'declined') return; toast('Couldn’t save the file' + (e && e.code ? ' (' + e.code + ')' : '') + '.', 'bad'); }
+}
+async function compressImage(file, max = 1200, q = 0.84){
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('This photo format can’t be opened. Use a JPG, PNG or WebP photo.')); i.src = url; });
+    let w = img.naturalWidth, h = img.naturalHeight; const s = Math.min(1, max / Math.max(w, h)); w = Math.max(1, Math.round(w * s)); h = Math.max(1, Math.round(h * s));
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const ctx = c.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h); ctx.drawImage(img, 0, 0, w, h);
+    const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', q));
+    if (!blob) throw new Error('Couldn’t process this photo.');
+    return blob;
+  } finally { URL.revokeObjectURL(url); }
+}
+const imgUrl = id => (typeof window.SK_IMG === 'function' ? window.SK_IMG(id) : String(id).startsWith('repo:') ? String(id).slice(5) : '/_blob/' + id);
+
+/* ======================= ui store ======================= */
+const VIEWS = ['home', 'orders', 'products', 'expenses', 'reports', 'import', 'setup'];
+const ui = { sheets: [], toasts: [], view: 'home', params: {}, v: 0 };
+const uiL = new Set();
+function uiEmit(){ ui.v++; uiL.forEach(f => f()); }
+function useUI(){ return useSyncExternalStore(f => { uiL.add(f); return () => uiL.delete(f); }, () => ui.v); }
+function readHash(){ const h = (location.hash || '').replace('#', ''); return VIEWS.includes(h) ? h : 'home'; }
+ui.view = readHash();
+window.addEventListener('hashchange', () => { const v = readHash(); if (v !== ui.view){ ui.view = v; ui.params = {}; uiEmit(); } });
+function go(v, params){ ui.view = v; ui.params = params || {}; try { if (location.hash !== '#' + v) history.replaceState(null, '', '#' + v); } catch (e) {} uiEmit(); try { window.scrollTo(0, 0); } catch (e) {} }
+function openSheet(render){ const id = uid('s'); ui.sheets = [...ui.sheets, { id, render }]; uiEmit(); return id; }
+function closeSheet(id){ ui.sheets = ui.sheets.filter(s => s.id !== id); uiEmit(); }
+function toast(msg, kind){ const id = uid('t'); ui.toasts = [...ui.toasts.slice(-2), { id, msg, kind: kind || 'ok' }]; uiEmit(); setTimeout(() => { ui.toasts = ui.toasts.filter(t => t.id !== id); uiEmit(); }, 3800); }
+function errText(e){
+  if (!e) return 'Something went wrong.';
+  const c = e.code;
+  if (c === 'sample') return 'This is sample data, so changes aren’t saved. Exit sample to use your own data.';
+  if (c === 'nodb') return 'Saving isn’t available right now. Check that you’re signed in and online.';
+  if (c === 'quota_exceeded' || c === 'quota_or_state') return 'Storage is full. Delete old photos or data, then try again.';
+  if (c === 'invalid_argument') return 'This change was refused. Only the owner of this khata can edit it.';
+  if (c === 'resource_exhausted' || c === 'rate_limited') return 'Too many changes at once. Wait a few seconds and try again.';
+  if (c === 'too_large') return 'This photo is too large (max 20 MB).';
+  if (c === 'unsupported_type') return 'This file type isn’t supported. Use JPG, PNG or WebP photos.';
+  if (c === 'chunk_full') return 'Too many orders in one month for one storage block. Import the file in smaller date ranges.';
+  if (c === 'not_granted') return 'Photo upload is only available to the owner of this khata.';
+  if (!c && e.message) return e.message;
+  return 'Couldn’t save. Check your connection and try again.';
+}
+async function attempt(fn, okMsg){ try { const r = await fn(); if (okMsg) toast(okMsg); return { ok: true, r }; } catch (e){ console.warn(e); toast(errText(e), 'bad'); return { ok: false, e }; } }
+function usePeriod(){
+  const [k, setK] = useState(() => { try { return localStorage.getItem('sk_period') || 'month'; } catch (e) { return 'month'; } });
+  const set = v => { setK(v); try { localStorage.setItem('sk_period', v); } catch (e) {} };
+  return [k, set];
+}
+function useWidth(ref){
+  const [w, setW] = useState(640);
+  useEffect(() => {
+    if (!ref.current || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(es => { for (const e of es){ const x = Math.round(e.contentRect.width); if (x > 0) setW(x); } });
+    ro.observe(ref.current); return () => ro.disconnect();
+  }, []);
+  return w;
+}
+
+/* ======================= small components ======================= */
+const ICONS = {
+  home: 'M3 10.5 12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
+  orders: 'M6 3h12a1 1 0 0 1 1 1v17l-3-2-3 2-3-2-3 2-2-1.3V4a1 1 0 0 1 1-1zM9 8h6M9 12h6M9 16h3',
+  box: 'M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8',
+  plus: 'M12 5v14M5 12h14',
+  more: 'M5 12h.01M12 12h.01M19 12h.01',
+  wallet: 'M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3M4 7.5V18a2 2 0 0 0 2 2h14V8H6.5A2.5 2.5 0 0 1 4 7.5zM16.5 14h.01',
+  chart: 'M4 20V11M10 20V5M16 20v-6M2.5 20h19',
+  upload: 'M12 15V4M7 9l5-5 5 5M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4',
+  sliders: 'M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1M15 4v4M9 10v4M17 16v4',
+  x: 'M6 6l12 12M18 6 6 18',
+  search: 'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-3.5-3.5',
+  image: 'M4 5h16v14H4zM4 15l4-4 4 4 3-3 5 5M15 9h.01',
+  alert: 'M12 3 2.5 20h19zM12 10v4M12 17h.01',
+  info: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v5M12 8h.01',
+  down: 'M12 4v11M7 10l5 5 5-5M5 20h14',
+  stock: 'M3 9l9-5 9 5v10H3zM8 19v-6h8v6M8 16h8',
+  check: 'M5 12.5 10 17 19 7',
+  rupee: 'M7 5h10M7 9h10M13 19 7 13h2a4 4 0 0 0 0-8',
+  back: 'M15 6l-6 6 6 6'
+};
+const Icon = ({ n, s }) => html`<svg viewBox="0 0 24 24" width=${s || 20} height=${s || 20} fill="none" stroke="currentColor" strokeWidth=${n === 'more' ? 3.2 : 1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d=${ICONS[n]}/></svg>`;
+function Thumb({ p, size }){
+  const [bad, setBad] = useState(false);
+  const id = p && p.images && p.images[0];
+  const sz = size || 44;
+  const ini = String(p && p.name || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  return html`<div className="thumb" style=${{ width: sz, height: sz }}>${id && !bad ? html`<img src=${imgUrl(id)} alt="" loading="lazy" onError=${() => setBad(true)}/>` : html`<span>${ini}</span>`}</div>`;
+}
+const Plat = ({ p }) => { const x = PLAT[p] || PLAT.x; return html`<span className=${'plat ' + x.cls}><i></i>${x.name}</span>`; };
+const Status = ({ s }) => html`<span className=${'pill s-' + (STATUS[s] ? s : 'pending')}>${STATUS[s] || 'Pending'}</span>`;
+function StockPill({ p, D }){
+  const q = D.stock[p.id] || 0, s = stockState(p, D);
+  const t = s === 'out' ? (q < 0 ? `Short by ${fmtN(-q)}` : 'Out of stock') : s === 'low' ? `Low · ${fmtN(q)} left` : `${fmtN(q)} in stock`;
+  return html`<span className=${'pill stock-' + s}>${t}</span>`;
+}
+function Field({ label, hint, children }){ return html`<label className="field"><span>${label}</span>${children}${hint ? html`<small>${hint}</small>` : null}</label>`; }
+function Money({ value, onChange, placeholder, id }){ return html`<span className="inr"><input id=${id} className="in num" inputMode="decimal" value=${value} placeholder=${placeholder || '0'} onChange=${e => onChange(e.target.value)}/></span>`; }
+function ProductSelect({ value, onChange, D, emptyLabel, id }){
+  return html`<select id=${id} className="in" value=${value || ''} onChange=${e => onChange(e.target.value)}>
+    <option value="">${emptyLabel || 'Choose product'}</option>
+    ${D.plist.map(p => html`<option key=${p.id} value=${p.id}>${p.name}${p.active === false ? ' (inactive)' : ''}</option>`)}
+  </select>`;
+}
+function Confirm({ label, sure, onConfirm, className, disabled, aria }){
+  const [arm, setArm] = useState(false);
+  useEffect(() => { if (!arm) return; const t = setTimeout(() => setArm(false), 4000); return () => clearTimeout(t); }, [arm]);
+  return html`<button type="button" className=${className || 'btn btn-d'} disabled=${disabled} aria-label=${arm ? undefined : aria} onClick=${e => { e.stopPropagation(); if (arm){ setArm(false); onConfirm(); } else setArm(true); }}>${arm ? (sure || 'Tap again to confirm') : label}</button>`;
+}
+function Sheet({ title, close, children, footer, wide }){
+  return html`<div className="sheet-in" style=${{ display: 'contents' }}>
+    <div className=${'sheet' + (wide ? ' wide' : '')} role="dialog" aria-modal="true" aria-label=${title} onClick=${e => e.stopPropagation()}>
+      <div className="sheet-h"><h2>${title}</h2><button className="icon-btn" aria-label="Close" onClick=${close}><${Icon} n="x"/></button></div>
+      <div className="sheet-b">${children}</div>
+      ${footer ? html`<div className="sheet-f">${footer}</div>` : null}
+    </div></div>`;
+}
+function SheetHost(){
+  useUI();
+  const top = ui.sheets[ui.sheets.length - 1];
+  useEffect(() => {
+    if (!top) return;
+    const k = e => { if (e.key === 'Escape') closeSheet(top.id); };
+    window.addEventListener('keydown', k);
+    const prev = document.body.style.overflow; document.body.style.overflow = 'hidden';
+    return () => { window.removeEventListener('keydown', k); document.body.style.overflow = prev; };
+  }, [top && top.id]);
+  return ui.sheets.map((s, i) => html`<div key=${s.id} className="ov" style=${i < ui.sheets.length - 1 ? { visibility: 'hidden' } : null} onClick=${() => closeSheet(s.id)}>${s.render(() => closeSheet(s.id))}</div>`);
+}
+function Toasts(){ useUI(); return html`<div className="toasts" role="status" aria-live="polite">${ui.toasts.map(t => html`<div key=${t.id} className=${'toast ' + (t.kind === 'bad' ? 'bad' : '')}>${t.msg}</div>`)}</div>`; }
+function Empty({ icon, title, text, children }){ return html`<div className="empty"><${Icon} n=${icon || 'info'} s=${30}/><h3>${title}</h3>${text ? html`<p>${text}</p>` : null}${children}</div>`; }
+function PeriodChips({ value, onChange }){ return html`<div className="chips" role="group" aria-label="Period">${PERIODS.map(([k, l]) => html`<button key=${k} className="chip" aria-pressed=${value === k} onClick=${() => onChange(k)}>${l}</button>`)}</div>`; }
+function Note({ kind, icon, children }){ return html`<div className=${'note ' + (kind || '')}><${Icon} n=${icon || 'alert'} s=${18}/><div>${children}</div></div>`; }
+
+/* ======================= sheets ======================= */
+function openQuickAdd(){
+  openSheet(close => html`<${Sheet} title="Add to your khata" close=${close}>
+    <div className="qa">
+      <button className="qa-btn" onClick=${() => { close(); openNewOrder(); }}><${Icon} n="orders"/><b>Order</b><span>A sale from any platform, offline or Amazon</span></button>
+      <button className="qa-btn" onClick=${() => { close(); openExpense(null); }}><${Icon} n="wallet"/><b>Expense</b><span>Packing, ads, courier, rent and other costs</span></button>
+      <button className="qa-btn" onClick=${() => { close(); openStock('buy'); }}><${Icon} n="stock"/><b>Stock in</b><span>New stock you bought from a supplier</span></button>
+      <button className="qa-btn" onClick=${() => { close(); openProduct(null); }}><${Icon} n="box"/><b>Product</b><span>With photos, cost and selling prices</span></button>
+      <button className="qa-btn" onClick=${() => { close(); go('import'); }}><${Icon} n="upload"/><b>Import report</b><span>Meesho or Flipkart orders and payment files</span></button>
+      <button className="qa-btn" onClick=${() => { close(); openStock('adj'); }}><${Icon} n="sliders"/><b>Adjust stock</b><span>Fix the count after damage or a recount</span></button>
+    </div></${Sheet}>`);
+}
+function openMore(){
+  openSheet(close => html`<${Sheet} title="More" close=${close}>
+    <div className="list">
+      ${[['expenses', 'wallet', 'Expenses', 'Packing, ads, courier and other costs'], ['reports', 'chart', 'Reports', 'Month-wise profit, product-wise sales, downloads'], ['import', 'upload', 'Import report', 'Meesho & Flipkart orders and payments'], ['setup', 'sliders', 'Setup', 'Business details, profit settings, backup']].map(([v, i, t, s]) => html`
+        <button key=${v} className="lrow" onClick=${() => { close(); go(v); }}><span className="thumb" style=${{ width: 40, height: 40 }}><${Icon} n=${i}/></span><div className="lrow-m"><div className="lrow-t">${t}</div><div className="lrow-s">${s}</div></div><span></span></button>`)}
+    </div></${Sheet}>`);
+}
+const openProduct = pid => openSheet(close => html`<${ProductSheet} pid=${pid} close=${close}/>`);
+const openOrder = (p, i) => openSheet(close => html`<${OrderSheet} p=${p} i=${i} close=${close}/>`);
+const openNewOrder = () => openSheet(close => html`<${NewOrderSheet} close=${close}/>`);
+const openExpense = item => openSheet(close => html`<${ExpenseSheet} item=${item} close=${close}/>`);
+const openStock = (mode, pid, item) => openSheet(close => html`<${StockSheet} mode=${mode} pid=${pid} item=${item} close=${close}/>`);
+
+function productForm(p){
+  p = p || {};
+  return {
+    name: p.name || '', skus: (p.skus || []).join(', '), cat: p.cat || '', cost: str(p.cost), packing: str(p.packing), low: str(p.low), open: str(p.open),
+    mPrice: str(p.price && p.price.m), mPay: str(p.payout && p.payout.m), fPrice: str(p.price && p.price.f), fPay: str(p.payout && p.payout.f),
+    note: p.note || '', active: p.active !== false, images: p.images || []
+  };
+}
+function ProductSheet({ pid, close }){
+  useStoreV();
+  const D = derive();
+  const existing = pid ? D.products[pid] : null;
+  const [f, setF] = useState(() => productForm(existing));
+  const [tab, setTab] = useState('details');
+  const [busy, setBusy] = useState(false);
+  const [upl, setUpl] = useState(0);
+  const imgs = useRef(f.images);
+  if (pid && !existing) return html`<${Sheet} title="Product" close=${close}><${Empty} title="This product isn't here anymore" text="It may have been deleted."/></${Sheet}>`;
+  const set = (k, v) => setF(x => ({ ...x, [k]: v }));
+  const defPack = Number(D.settings.packing) || 0;
+  const cost = num(f.cost) || 0, pack = f.packing !== '' ? (num(f.packing) || 0) : defPack;
+  const unitProfit = pay => { const v = num(pay); return v > 0 ? v - cost - pack : null; };
+  const skuList = f.skus.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
+  const clash = skuList.find(s => { const o = D.skuMap.get(normSku(s)); return o && o !== pid; });
+  function setImages(next){
+    imgs.current = next; setF(x => ({ ...x, images: next }));
+    if (existing && !st.sample) attempt(() => saveProduct({ ...st.products[pid], images: next }));
+  }
+  async function addPhotos(files){
+    if (st.sample){ toast(errText({ code: 'sample' }), 'bad'); return; }
+    if (!st.assets){ toast('Photo upload is only available to the owner of this khata, signed in to Claude.', 'bad'); return; }
+    const list = [...files].slice(0, 8);
+    setUpl(n => n + list.length);
+    for (const file of list){
+      try {
+        const blob = await compressImage(file);
+        const r = await st.assets.upload(blob, { type: 'image/jpeg' });
+        setImages([...imgs.current, r.id]);
+      } catch (e){ toast(errText(e), 'bad'); }
+      finally { setUpl(n => n - 1); }
+    }
+  }
+  async function removePhoto(id){
+    setImages(imgs.current.filter(x => x !== id));
+    if (st.assets){ try { await st.assets.delete(id); } catch (e) { console.warn(e); } }
+  }
+  function makeCover(id){ setImages([id, ...imgs.current.filter(x => x !== id)]); }
+  async function save(){
+    if (!f.name.trim()){ toast('Give the product a name.', 'bad'); return; }
+    if (clash){ toast(`SKU “${clash}” already belongs to another product.`, 'bad'); return; }
+    const price = {}, payout = {};
+    if (num(f.mPrice) != null) price.m = num(f.mPrice); if (num(f.fPrice) != null) price.f = num(f.fPrice);
+    if (num(f.mPay) != null) payout.m = num(f.mPay); if (num(f.fPay) != null) payout.f = num(f.fPay);
+    const doc = { ...(existing || {}), name: f.name.trim(), skus: [...new Set(skuList)], cat: f.cat.trim(), cost: num(f.cost) != null ? num(f.cost) : 0,
+      packing: f.packing === '' ? null : num(f.packing), low: f.low === '' ? null : num(f.low), open: Math.round(num(f.open) || 0),
+      price, payout, note: f.note.trim(), active: f.active, images: imgs.current };
+    setBusy(true);
+    const r = await attempt(() => saveProduct(doc), existing ? 'Product saved' : 'Product added');
+    setBusy(false);
+    if (r.ok){
+      close();
+      const newSkus = skuList.map(normSku);
+      const relink = D.orders.filter(o => !o.pid && o.sku && newSkus.includes(normSku(o.sku)));
+      if (relink.length) attempt(() => commitOrders(relink.map(o => ({ p: o.p, i: o.i, next: { ...o, pid: r.r, u: Date.now() } }))), `Linked ${relink.length} order${relink.length > 1 ? 's' : ''} to this product`);
+    }
+  }
+  async function del(){ setBusy(true); const r = await attempt(() => deleteProduct(pid), 'Product deleted'); setBusy(false); if (r.ok) close(); }
+  const moves = existing ? D.moves.filter(m => m.pid === pid) : [];
+  const months = existing ? [...D.byMonth.entries()].map(([m, os]) => {
+    let out = 0, back = 0; for (const o of os){ if (o.pid !== pid) continue; const c = D.calc.get(o); if (c.st === 'cancelled') continue; out += c.q; if ((c.st === 'rto' || c.st === 'return') && o.rs !== false) back += c.q; }
+    return { m, out, back };
+  }).filter(x => x.out).sort((a, b) => b.m.localeCompare(a.m)).slice(0, 6) : [];
+  const footer = html`
+    ${existing ? html`<${Confirm} label="Delete" sure="Tap again to delete" onConfirm=${del} disabled=${busy}/>` : null}
+    <span className="grow"></span>
+    <button className="btn" onClick=${close}>Cancel</button>
+    <button className="btn btn-p" onClick=${save} disabled=${busy || upl > 0}>${upl > 0 ? 'Uploading photos…' : busy ? 'Saving…' : 'Save product'}</button>`;
+  return html`<${Sheet} title=${existing ? existing.name : 'New product'} close=${close} footer=${tab === 'details' ? footer : null} wide=${true}>
+    ${existing ? html`<div className="tabs" role="tablist">
+      <button role="tab" aria-selected=${tab === 'details'} onClick=${() => setTab('details')}>Details</button>
+      <button role="tab" aria-selected=${tab === 'stock'} onClick=${() => setTab('stock')}>Stock & sales</button></div>` : null}
+    ${tab === 'details' ? html`
+      <div className="field"><span>Photos</span>
+        <div className="photos">
+          ${f.images.map((id, ix) => html`<div className="photo" key=${id}><img src=${imgUrl(id)} alt=${'Photo ' + (ix + 1)}/>${ix === 0 ? html`<span className="cover">Cover</span>` : null}
+            <div className="photo-tools">${ix > 0 ? html`<button type="button" aria-label="Make this the cover photo" onClick=${() => makeCover(id)}>Cover</button>` : html`<span></span>`}<${Confirm} className="danger" label="✕" aria="Remove photo" sure="Remove?" onConfirm=${() => removePhoto(id)}/></div></div>`)}
+          ${upl > 0 ? html`<div className="photo-add" aria-live="polite">Uploading ${upl}…</div>` : null}
+          <label className="photo-add"><${Icon} n="image"/>Add photos<input type="file" accept="image/*" multiple onChange=${e => { addPhotos(e.target.files); e.target.value = ''; }}/></label>
+        </div>
+        <small>The first photo is the cover. Photos are resized to save space.</small>
+      </div>
+      <${Field} label="Product name"><input id="p-name" className="in" value=${f.name} onChange=${e => set('name', e.target.value)} placeholder="e.g. Ice Roller for Face (Pack of 2)"/><//>
+      <div className="r2 stack-sm">
+        <${Field} label="SKU codes" hint="The SKU you used on Meesho/Flipkart. Separate several with commas."><input id="p-sku" className="in num" value=${f.skus} onChange=${e => set('skus', e.target.value)} placeholder="IR-CAPSULE-P2-PURPLE"/><//>
+        <${Field} label="Category"><input id="p-cat" className="in" value=${f.cat} onChange=${e => set('cat', e.target.value)} placeholder="Beauty, Kitchen…"/><//>
+      </div>
+      ${clash ? html`<${Note} kind="bad">SKU “${clash}” is already used by ${D.products[D.skuMap.get(normSku(clash))].name}.<//>` : null}
+      <div className="r3">
+        <${Field} label="Cost per unit" hint="What one unit cost you, with transport"><${Money} id="p-cost" value=${f.cost} onChange=${v => set('cost', v)}/><//>
+        <${Field} label="Packing per unit" hint=${'Blank uses default ' + fmtINR(defPack)}><${Money} id="p-pack" value=${f.packing} onChange=${v => set('packing', v)} placeholder=${String(defPack)}/><//>
+        <${Field} label=${existing ? 'Opening stock' : 'Stock you have now'} hint=${existing ? 'Units before you started tracking' : 'Units in hand today'}><input id="p-open" className="in num" inputMode="numeric" value=${f.open} onChange=${e => set('open', e.target.value)} placeholder="0"/><//>
+      </div>
+      <div className="r2">
+        ${[['m', 'Meesho', 'mPrice', 'mPay'], ['f', 'Flipkart', 'fPrice', 'fPay']].map(([k, n, pk, yk]) => {
+          const up = unitProfit(f[yk]);
+          return html`<div className="box" key=${k}>
+            <div className="plat-box-h"><${Plat} p=${k}/>${up != null ? html`<span className=${'calc ' + (up < 0 ? 'neg' : '')}>Profit/unit <b>${fmtINR(up)}</b></span>` : html`<span className="calc muted">Add payout to see profit</span>`}</div>
+            <div className="r2">
+              <${Field} label="Selling price"><${Money} id=${'p-' + pk} value=${f[pk]} onChange=${v => set(pk, v)}/><//>
+              <${Field} label="You get (payout)"><${Money} id=${'p-' + yk} value=${f[yk]} onChange=${v => set(yk, v)}/><//>
+            </div></div>`;
+        })}
+      </div>
+      <small className="muted small">Payout is what the platform pays you per unit after its fees and shipping. It's used to estimate profit until the payment report arrives.</small>
+      <div className="r2">
+        <${Field} label="Low stock alert at" hint=${'Blank uses default ' + (D.settings.low || 0) + ' units'}><input id="p-low" className="in num" inputMode="numeric" value=${f.low} onChange=${e => set('low', e.target.value)} placeholder=${String(D.settings.low || 0)}/><//>
+        <${Field} label="Notes"><input id="p-note" className="in" value=${f.note} onChange=${e => set('note', e.target.value)} placeholder="Supplier, size, colour…"/><//>
+      </div>
+      <label className="check"><input type="checkbox" checked=${f.active} onChange=${e => set('active', e.target.checked)}/><span>Active product <span className="muted">(untick to hide it from lists when you stop selling it)</span></span></label>
+    ` : html`
+      <div className="r3">
+        <div className="kpi"><span className="kpi-l">In stock</span><span className=${'kpi-v ' + ((D.stock[pid] || 0) <= 0 ? 'neg' : '')}>${fmtN(D.stock[pid] || 0)}</span><span className="kpi-s">units</span></div>
+        <div className="kpi"><span className="kpi-l">Stock value</span><span className="kpi-v">${R0(Math.max(0, D.stock[pid] || 0) * (Number(existing.cost) || 0))}</span><span className="kpi-s">at ${fmtINR(Number(existing.cost) || 0)} each</span></div>
+        <div className="kpi"><span className="kpi-l">Sold · 30 days</span><span className="kpi-v">${fmtN(D.sold30[pid] || 0)}</span><span className="kpi-s">${(D.sold30[pid] || 0) > 0 ? `about ${Math.max(1, Math.round((D.stock[pid] || 0) / ((D.sold30[pid] || 1) / 30)))} days of stock` : 'units'}</span></div>
+      </div>
+      <div style=${{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <button className="btn btn-p" onClick=${() => openStock('buy', pid)}><${Icon} n="stock"/>Stock in</button>
+        <button className="btn" onClick=${() => openStock('adj', pid)}><${Icon} n="sliders"/>Adjust</button>
+      </div>
+      <div className="sec-t">Stock history</div>
+      <div className="list">
+        <div className="lrow"><span className="thumb" style=${{ width: 36, height: 36 }}><${Icon} n="box" s=${18}/></span><div className="lrow-m"><div className="lrow-t">Opening stock</div><div className="lrow-s">Set on the product</div></div><div className="lrow-e"><span className="num">${fmtN(Number(existing.open) || 0)}</span></div></div>
+        ${moves.map(m => html`<button key=${m.id} className="lrow" onClick=${() => openStock(m.k, pid, m)}>
+          <span className="thumb" style=${{ width: 36, height: 36 }}><${Icon} n=${m.k === 'buy' ? 'stock' : 'sliders'} s=${18}/></span>
+          <div className="lrow-m"><div className="lrow-t">${m.k === 'buy' ? 'Stock in' : (ADJ_WHY.find(x => x[0] === m.why) || [0, 'Adjustment'])[1]}</div><div className="lrow-s">${dayLong(m.d)}${m.sup ? ' · ' + m.sup : ''}${m.k === 'buy' && m.c ? ' · ' + fmtINR(m.c) : ''}</div></div>
+          <div className="lrow-e"><span className=${'num ' + sgn(m.q)}>${m.q > 0 ? '+' : ''}${fmtN(m.q)}</span></div></button>`)}
+        ${months.map(x => html`<div key=${x.m} className="lrow"><span className="thumb" style=${{ width: 36, height: 36 }}><${Icon} n="orders" s=${18}/></span><div className="lrow-m"><div className="lrow-t">Orders · ${monthLabel(x.m)}</div><div className="lrow-s">${x.back ? fmtN(x.back) + ' came back from returns/RTO' : 'Shipped to customers'}</div></div><div className="lrow-e"><span className="num neg">−${fmtN(x.out - x.back)}</span></div></div>`)}
+      </div>
+    `}
+  </${Sheet}>`;
+}
+
+function StockSheet({ mode, pid, item, close }){
+  useStoreV();
+  const D = derive();
+  const [m, setM] = useState(item ? item.k : (mode || 'buy'));
+  const [f, setF] = useState(() => item ? { pid: item.pid, d: item.d, q: String(Math.abs(item.q)), sign: item.q < 0 ? -1 : 1, c: str(item.c), per: 'total', sup: item.sup || '', why: item.why || 'count', n: item.n || '', upd: false }
+    : { pid: pid || '', d: today(), q: '', sign: -1, c: '', per: 'total', sup: '', why: 'count', n: '', upd: true });
+  const [busy, setBusy] = useState(false);
+  const set = (k, v) => setF(x => ({ ...x, [k]: v }));
+  const p = D.products[f.pid];
+  const q = Math.round(num(f.q) || 0);
+  const total = f.per === 'unit' ? (num(f.c) || 0) * q : (num(f.c) || 0);
+  const unit = q > 0 ? total / q : 0;
+  const cur = p ? Math.max(0, D.stock[p.id] || 0) : 0;
+  const oldCost = p ? Number(p.cost) || 0 : 0;
+  const avg = p && q > 0 ? (oldCost > 0 ? (cur * oldCost + total) / (cur + q) : unit) : 0;
+  async function save(){
+    if (!p){ toast('Choose a product.', 'bad'); return; }
+    if (!(q > 0)){ toast('Enter how many units.', 'bad'); return; }
+    setBusy(true);
+    const it = m === 'buy'
+      ? { id: item ? item.id : uid('k'), d: f.d || today(), pid: p.id, q, c: round2(total), k: 'buy', sup: f.sup.trim() || undefined, n: f.n.trim() || undefined }
+      : { id: item ? item.id : uid('k'), d: f.d || today(), pid: p.id, q: f.sign * q, c: 0, k: 'adj', why: f.why, n: f.n.trim() || undefined };
+    const r = await attempt(async () => {
+      await updateItem('stk', item, it);
+      if (m === 'buy' && f.upd && total > 0) await saveProduct({ ...st.products[p.id], cost: round2(avg) });
+    }, m === 'buy' ? `Added ${fmtN(q)} units to stock` : 'Stock adjusted');
+    setBusy(false); if (r.ok) close();
+  }
+  async function del(){ setBusy(true); const r = await attempt(() => removeItem('stk', item), 'Entry deleted'); setBusy(false); if (r.ok) close(); }
+  return html`<${Sheet} title=${item ? 'Edit stock entry' : m === 'buy' ? 'Stock in' : 'Adjust stock'} close=${close} footer=${html`
+      ${item ? html`<${Confirm} label="Delete" sure="Tap again to delete" onConfirm=${del} disabled=${busy}/>` : null}
+      <span className="grow"></span><button className="btn" onClick=${close}>Cancel</button>
+      <button className="btn btn-p" onClick=${save} disabled=${busy}>${busy ? 'Saving…' : 'Save'}</button>`}>
+    ${!item ? html`<div className="seg" role="group"><button aria-pressed=${m === 'buy'} onClick=${() => setM('buy')}>Stock in (purchase)</button><button aria-pressed=${m === 'adj'} onClick=${() => setM('adj')}>Adjust count</button></div>` : null}
+    <${Field} label="Product"><${ProductSelect} id="s-prod" D=${D} value=${f.pid} onChange=${v => set('pid', v)}/><//>
+    ${p ? html`<p className="small muted">Now in stock: <b className="num">${fmtN(D.stock[p.id] || 0)}</b> units</p>` : null}
+    ${m === 'buy' ? html`
+      <div className="r2">
+        <${Field} label="Units bought"><input id="s-q" className="in num" inputMode="numeric" value=${f.q} onChange=${e => set('q', e.target.value)} placeholder="0"/><//>
+        <${Field} label="Date"><input id="s-d" type="date" className="in" value=${f.d} onChange=${e => set('d', e.target.value)}/><//>
+      </div>
+      <div className="seg" role="group" aria-label="Cost entered as"><button aria-pressed=${f.per === 'total'} onClick=${() => set('per', 'total')}>Total paid</button><button aria-pressed=${f.per === 'unit'} onClick=${() => set('per', 'unit')}>Price per unit</button></div>
+      <div className="r2">
+        <${Field} label=${f.per === 'unit' ? 'Price per unit' : 'Total paid'} hint="Include transport and GST you paid"><${Money} id="s-c" value=${f.c} onChange=${v => set('c', v)}/><//>
+        <${Field} label="Supplier"><input id="s-sup" className="in" value=${f.sup} onChange=${e => set('sup', e.target.value)} placeholder="Shop or market name"/><//>
+      </div>
+      ${q > 0 && total > 0 ? html`<p className="calc">Works out to <b>${fmtINR(unit)}</b> per unit · total <b>${fmtINR(total)}</b></p>` : null}
+      ${p && q > 0 && total > 0 ? html`<label className="check"><input type="checkbox" checked=${f.upd} onChange=${e => set('upd', e.target.checked)}/><span>Update product cost to the average <b className="num">${fmtINR(avg)}</b> per unit <span className="muted">(was ${fmtINR(oldCost)})</span></span></label>` : null}
+    ` : html`
+      <div className="seg" role="group"><button aria-pressed=${f.sign === -1} onClick=${() => set('sign', -1)}>Remove units</button><button aria-pressed=${f.sign === 1} onClick=${() => set('sign', 1)}>Add units</button></div>
+      <div className="r2">
+        <${Field} label="Units"><input id="s-q" className="in num" inputMode="numeric" value=${f.q} onChange=${e => set('q', e.target.value)} placeholder="0"/><//>
+        <${Field} label="Date"><input id="s-d" type="date" className="in" value=${f.d} onChange=${e => set('d', e.target.value)}/><//>
+      </div>
+      <${Field} label="Reason"><select id="s-why" className="in" value=${f.why} onChange=${e => set('why', e.target.value)}>${ADJ_WHY.map(([k, l]) => html`<option key=${k} value=${k}>${l}</option>`)}</select><//>
+    `}
+    <${Field} label="Note"><input id="s-n" className="in" value=${f.n} onChange=${e => set('n', e.target.value)} placeholder="Optional"/><//>
+  </${Sheet}>`;
+}
+
+function OrderSheet({ p, i, close }){
+  useStoreV();
+  const D = derive();
+  const o = D.byKey.get(p + ':' + i);
+  const [f, setF] = useState(() => o ? { st: o.st || 'pending', d: o.d || today(), pid: o.pid || '', q: String(o.q || 1), s: str(o.s), recv: o.set ? String(sumSet(o.set)) : '', uc: str(o.uc), pk: str(o.pk), rs: o.rs !== false, o: o.o || '', n: o.n || '', link: true } : null);
+  const [busy, setBusy] = useState(false);
+  if (!o || !f) return html`<${Sheet} title="Order" close=${close}><${Empty} title="This order isn't here anymore" text="It may have been deleted."/></${Sheet}>`;
+  const set = (k, v) => setF(x => ({ ...x, [k]: v }));
+  const c = D.calc.get(o);
+  const prod = D.products[f.pid];
+  const sameSku = o.sku && f.pid && f.pid !== o.pid ? D.orders.filter(x => x !== o && !x.pid && x.sku && normSku(x.sku) === normSku(o.sku)).length : 0;
+  async function save(){
+    setBusy(true);
+    const next = { ...o, st: f.st, d: f.d || o.d, q: Math.max(1, Math.round(num(f.q) || 1)), rs: f.rs, u: Date.now() };
+    if (f.pid) next.pid = f.pid; else delete next.pid;
+    if (num(f.s) != null) next.s = num(f.s); else delete next.s;
+    if (num(f.uc) != null) next.uc = num(f.uc); else delete next.uc;
+    if (num(f.pk) != null) next.pk = num(f.pk); else delete next.pk;
+    if (f.o.trim()) next.o = f.o.trim(); else delete next.o;
+    if (f.n.trim()) next.n = f.n.trim(); else delete next.n;
+    const rv = f.recv.trim() === '' ? null : num(f.recv);
+    const was = o.set ? sumSet(o.set) : null;
+    if (rv == null) delete next.set; else if (was == null || Math.abs(rv - was) > 0.004) next.set = { manual: rv };
+    const edits = [{ p: o.p, i: o.i, next }];
+    const r = await attempt(async () => {
+      if (f.pid && f.pid !== o.pid && o.sku && f.link){
+        const pr = st.products[f.pid];
+        if (pr && !(pr.skus || []).some(s => normSku(s) === normSku(o.sku))) await saveProduct({ ...pr, skus: [...(pr.skus || []), o.sku] });
+        for (const x of D.orders) if (x !== o && !x.pid && x.sku && normSku(x.sku) === normSku(o.sku)) edits.push({ p: x.p, i: x.i, next: { ...x, pid: f.pid, u: Date.now() } });
+      }
+      await commitOrders(edits);
+    }, edits.length > 1 ? `Saved and linked ${edits.length - 1} more order${edits.length > 2 ? 's' : ''}` : 'Order saved');
+    setBusy(false); if (r.ok) close();
+  }
+  async function del(){ setBusy(true); const r = await attempt(() => commitOrders([{ p: o.p, i: o.i, next: null }]), 'Order deleted'); setBusy(false); if (r.ok) close(); }
+  const setEntries = o.set ? Object.entries(o.set) : [];
+  return html`<${Sheet} title=${prod ? prod.name : (o.t || o.sku || 'Order')} close=${close} footer=${html`
+      <${Confirm} label="Delete" sure="Tap again to delete" onConfirm=${del} disabled=${busy}/>
+      <span className="grow"></span><button className="btn" onClick=${close}>Cancel</button>
+      <button className="btn btn-p" onClick=${save} disabled=${busy}>${busy ? 'Saving…' : 'Save order'}</button>`}>
+    <div className="lrow-s"><${Plat} p=${o.p}/><span className="num">${o.i}</span>${o.src === 'man' ? html`<span>· added by hand</span>` : html`<span>· from report</span>`}${o.sr ? html`<span>· platform status “${o.sr}”</span>` : null}</div>
+    <dl className="kv">
+      <dt>Payout</dt><dd>${c.paid ? fmtINR(c.recv) + ' received' : c.expected ? '~' + fmtINR(c.expected) + ' expected' : fmtINR(0)}</dd>
+      <dt>Product & packing cost</dt><dd>${fmtINR(c.cost)}</dd>
+      <dt>Profit</dt><dd className=${sgn(c.profit)}>${fmtINR(c.profit)}</dd>
+    </dl>
+    ${!o.pid ? html`<${Note}>This order isn't linked to a product, so its cost is ₹0 and stock isn't reduced. Pick the product below.<//>` : null}
+    <div className="r2">
+      <${Field} label="Status" hint=${STATUS_HELP[f.st]}><select id="o-st" className="in" value=${f.st} onChange=${e => set('st', e.target.value)}>${Object.entries(STATUS).map(([k, l]) => html`<option key=${k} value=${k}>${l}</option>`)}</select><//>
+      <${Field} label="Order date"><input id="o-d" type="date" className="in" value=${f.d} onChange=${e => set('d', e.target.value)}/><//>
+    </div>
+    <${Field} label="Product"><${ProductSelect} id="o-prod" D=${D} value=${f.pid} onChange=${v => set('pid', v)} emptyLabel="Not linked"/><//>
+    ${o.sku && f.pid && f.pid !== o.pid ? html`<label className="check"><input type="checkbox" checked=${f.link} onChange=${e => set('link', e.target.checked)}/><span>Remember SKU <b className="num">${o.sku}</b> for this product${sameSku ? html` and link the other <b>${sameSku}</b> order${sameSku > 1 ? 's' : ''} with this SKU` : null}</span></label>` : null}
+    <div className="r3">
+      <${Field} label="Quantity"><input id="o-q" className="in num" inputMode="numeric" value=${f.q} onChange=${e => set('q', e.target.value)}/><//>
+      <${Field} label="Sale amount"><${Money} id="o-s" value=${f.s} onChange=${v => set('s', v)}/><//>
+      <${Field} label="Payout received" hint="Blank = not paid yet"><${Money} id="o-recv" value=${f.recv} onChange=${v => set('recv', v)} placeholder="Not paid"/><//>
+    </div>
+    ${setEntries.length > 1 || (setEntries.length === 1 && setEntries[0][0] !== 'manual') ? html`<div className="small muted">From payment reports: ${setEntries.map(([k, v]) => html`<span key=${k} className="num" style=${{ marginRight: 10 }}>${fmtINR(v)}${k.split('|')[0] && k.split('|')[0] !== 'pay' ? ' (' + k.split('|')[0] + ')' : ''}</span>`)}</div>` : null}
+    ${f.st === 'rto' || f.st === 'return' ? html`<label className="check"><input type="checkbox" checked=${f.rs} onChange=${e => set('rs', e.target.checked)}/><span>The returned item came back in good condition and is back in stock</span></label>` : null}
+    <div className="r2">
+      <${Field} label="Cost per unit" hint=${'Blank uses product cost ' + fmtINR(prod ? Number(prod.cost) || 0 : 0)}><${Money} id="o-uc" value=${f.uc} onChange=${v => set('uc', v)} placeholder=${String(prod ? Number(prod.cost) || 0 : 0)}/><//>
+      <${Field} label="Packing per unit" hint="Blank uses the product's packing cost"><${Money} id="o-pk" value=${f.pk} onChange=${v => set('pk', v)} placeholder=${String(c.pk)}/><//>
+    </div>
+    <div className="r2">
+      <${Field} label="Order ID"><input id="o-o" className="in num" value=${f.o} onChange=${e => set('o', e.target.value)} placeholder="Optional"/><//>
+      <${Field} label="Note"><input id="o-n" className="in" value=${f.n} onChange=${e => set('n', e.target.value)} placeholder="Optional"/><//>
+    </div>
+  </${Sheet}>`;
+}
+
+function NewOrderSheet({ close }){
+  useStoreV();
+  const D = derive();
+  const [f, setF] = useState({ p: 'x', d: today(), pid: '', q: '1', s: '', recv: '', st: 'delivered', o: '', n: '' });
+  const [busy, setBusy] = useState(false);
+  const set = (k, v) => setF(x => ({ ...x, [k]: v }));
+  function pick(pid){
+    const pr = D.products[pid]; const q = Math.max(1, Math.round(num(f.q) || 1));
+    setF(x => ({ ...x, pid, s: x.s || (pr && pr.price && pr.price[x.p] ? String(pr.price[x.p] * q) : x.s) }));
+  }
+  async function save(){
+    if (!f.pid){ toast('Choose the product you sold.', 'bad'); return; }
+    setBusy(true);
+    const id = 'M' + Date.now().toString(36).toUpperCase();
+    const next = { i: id, p: f.p, d: f.d || today(), pid: f.pid, q: Math.max(1, Math.round(num(f.q) || 1)), st: f.st, rs: true, src: 'man', u: Date.now() };
+    if (num(f.s) != null) next.s = num(f.s);
+    if (num(f.recv) != null) next.set = { manual: num(f.recv) };
+    if (f.o.trim()) next.o = f.o.trim(); if (f.n.trim()) next.n = f.n.trim();
+    const r = await attempt(() => commitOrders([{ p: f.p, i: id, next }]), 'Order added');
+    setBusy(false); if (r.ok) close();
+  }
+  return html`<${Sheet} title="New order" close=${close} footer=${html`<span className="grow"></span><button className="btn" onClick=${close}>Cancel</button><button className="btn btn-p" onClick=${save} disabled=${busy}>${busy ? 'Saving…' : 'Add order'}</button>`}>
+    <div className="field"><span>Sold on</span><div className="seg" role="group">${Object.entries(PLAT).map(([k, v]) => html`<button key=${k} aria-pressed=${f.p === k} onClick=${() => set('p', k)}>${k === 'x' ? 'Other / offline' : v.name}</button>`)}</div>
+      <small>Meesho and Flipkart orders usually come in through Import report. Use this for offline, WhatsApp or Amazon sales.</small></div>
+    <${Field} label="Product"><${ProductSelect} id="n-prod" D=${D} value=${f.pid} onChange=${pick}/><//>
+    <div className="r3">
+      <${Field} label="Quantity"><input id="n-q" className="in num" inputMode="numeric" value=${f.q} onChange=${e => set('q', e.target.value)}/><//>
+      <${Field} label="Sale amount"><${Money} id="n-s" value=${f.s} onChange=${v => set('s', v)}/><//>
+      <${Field} label="Money received" hint="Blank = not paid yet"><${Money} id="n-recv" value=${f.recv} onChange=${v => set('recv', v)} placeholder="Not paid"/><//>
+    </div>
+    <div className="r2">
+      <${Field} label="Status"><select id="n-st" className="in" value=${f.st} onChange=${e => set('st', e.target.value)}>${Object.entries(STATUS).map(([k, l]) => html`<option key=${k} value=${k}>${l}</option>`)}</select><//>
+      <${Field} label="Date"><input id="n-d" type="date" className="in" value=${f.d} onChange=${e => set('d', e.target.value)}/><//>
+    </div>
+    <div className="r2">
+      <${Field} label="Order ID"><input id="n-o" className="in num" value=${f.o} onChange=${e => set('o', e.target.value)} placeholder="Optional"/><//>
+      <${Field} label="Note"><input id="n-n" className="in" value=${f.n} onChange=${e => set('n', e.target.value)} placeholder="Customer name, etc."/><//>
+    </div>
+  </${Sheet}>`;
+}
+
+function ExpenseSheet({ item, close }){
+  const [f, setF] = useState(() => item ? { ...item, a: str(item.a), p: item.p || '', n: item.n || '' } : { id: uid('e'), d: today(), c: 'pack', a: '', p: '', n: '' });
+  const [busy, setBusy] = useState(false);
+  const set = (k, v) => setF(x => ({ ...x, [k]: v }));
+  async function save(){
+    const a = num(f.a);
+    if (!(a > 0)){ toast('Enter the amount you spent.', 'bad'); return; }
+    setBusy(true);
+    const it = { id: f.id, d: f.d || today(), c: f.c, a: round2(a), p: f.p || undefined, n: f.n.trim() || undefined };
+    const r = await attempt(() => updateItem('exp', item, it), item ? 'Expense saved' : 'Expense added');
+    setBusy(false); if (r.ok) close();
+  }
+  async function del(){ setBusy(true); const r = await attempt(() => removeItem('exp', item), 'Expense deleted'); setBusy(false); if (r.ok) close(); }
+  return html`<${Sheet} title=${item ? 'Edit expense' : 'New expense'} close=${close} footer=${html`
+      ${item ? html`<${Confirm} label="Delete" sure="Tap again to delete" onConfirm=${del} disabled=${busy}/>` : null}
+      <span className="grow"></span><button className="btn" onClick=${close}>Cancel</button>
+      <button className="btn btn-p" onClick=${save} disabled=${busy}>${busy ? 'Saving…' : item ? 'Save' : 'Add expense'}</button>`}>
+    <div className="r2">
+      <${Field} label="Amount"><${Money} id="e-a" value=${f.a} onChange=${v => set('a', v)}/><//>
+      <${Field} label="Date"><input id="e-d" type="date" className="in" value=${f.d} onChange=${e => set('d', e.target.value)}/><//>
+    </div>
+    <${Field} label="Category"><select id="e-c" className="in" value=${f.c} onChange=${e => set('c', e.target.value)}>${EXP_CATS.map(([k, l]) => html`<option key=${k} value=${k}>${l}</option>`)}</select><//>
+    <${Field} label="For platform" hint="Optional. Helps you see ads or penalties per platform."><select id="e-p" className="in" value=${f.p} onChange=${e => set('p', e.target.value)}><option value="">All / not specific</option>${Object.entries(PLAT).map(([k, v]) => html`<option key=${k} value=${k}>${v.name}</option>`)}</select><//>
+    <${Field} label="Note"><input id="e-n" className="in" value=${f.n} onChange=${e => set('n', e.target.value)} placeholder="e.g. 500 polybags 10×12"/><//>
+    <p className="small muted">Stock you buy from suppliers goes under Stock in, not here. That keeps product cost and profit correct.</p>
+  </${Sheet}>`;
+}
+
+/* ======================= views ======================= */
+function Brand({ compact }){
+  useStoreV();
+  const biz = (st.sample ? 'Sample store' : st.settings.biz) || '';
+  return html`<div className="brand"><div className="brand-mark" aria-hidden="true">₹</div><div style=${{ minWidth: 0 }}><div className="brand-name">Seller Khata</div>${biz && !compact ? html`<div className="brand-sub">${biz}</div>` : null}</div></div>`;
+}
+function Banners(){
+  useStoreV();
+  const out = [];
+  if (st.sample) out.push(html`<div key="s" className="banner b-sample"><span className="grow"><b>Sample data.</b> These numbers are examples to show how the app works. They aren't your business.</span><button className="btn btn-sm" onClick=${() => setSample(false)}>Exit sample</button></div>`);
+  else if (st.phase === 'nodb') out.push(html`<div key="n" className="banner b-info"><span className="grow">Saving isn't available here. Sign in to Seller Khata to save your products, orders and expenses.</span><button className="btn btn-sm" onClick=${() => setSample(true)}>Preview with sample data</button></div>`);
+  if (st.err && !st.sample) out.push(html`<div key="e" className="banner b-bad"><span className="grow">${st.err}</span><button className="btn btn-sm" onClick=${() => { st.err = ''; emit(); }}>Dismiss</button></div>`);
+  return out;
+}
+function Loading(){ return html`<div className="loading" aria-busy="true"><div className="sk" style=${{ height: 54 }}></div><div className="sk" style=${{ height: 150 }}></div><div className="kpis"><div className="sk"></div><div className="sk"></div><div className="sk"></div><div className="sk"></div></div><div className="sk" style=${{ height: 260 }}></div></div>`; }
+
+function niceTicks(min, max, count){
+  if (max === min){ max = min + 1; }
+  const span = max - min; const raw = span / count; const mag = Math.pow(10, Math.floor(Math.log10(raw))); const norm = raw / mag;
+  const step = (norm < 1.5 ? 1 : norm < 3 ? 2 : norm < 7 ? 5 : 10) * mag;
+  const lo = Math.floor(min / step) * step, hi = Math.ceil(max / step) * step;
+  const t = []; for (let v = lo; v <= hi + step / 2; v += step) t.push(Math.round(v * 100) / 100);
+  return t;
+}
+function EarningsChart({ T }){
+  const ref = useRef(null); const w = useWidth(ref);
+  const bs = T.buckets;
+  const has = bs.some(b => b.n);
+  const lastIdx = (() => { for (let i = bs.length - 1; i >= 0; i--) if (bs[i].n) return i; return bs.length - 1; })();
+  const [sel, setSel] = useState(null);
+  const si = sel != null && sel < bs.length ? sel : lastIdx;
+  const H = 210, padL = 50, padR = 6, padT = 10, padB = 24;
+  const maxV = Math.max(1, ...bs.map(b => Math.max(b.inc, b.profit)));
+  const minV = Math.min(0, ...bs.map(b => b.profit));
+  const ticks = niceTicks(minV, maxV, 4);
+  const y0 = ticks[0], y1 = ticks[ticks.length - 1];
+  const ih = H - padT - padB, iw = Math.max(40, w - padL - padR);
+  const Y = v => padT + ih - (v - y0) / (y1 - y0) * ih;
+  const bw = iw / Math.max(1, bs.length); const barW = Math.max(2, Math.min(26, bw * 0.68));
+  const every = Math.max(1, Math.ceil(bs.length / Math.max(2, Math.floor(iw / 58))));
+  const b = bs[si];
+  return html`<div className="card">
+    <div className="card-h"><div><h2>Earnings by ${T.bucketName}</h2><p>Payout from platforms and the profit left after product and packing cost</p></div>
+      <div className="legend"><span><i style=${{ background: 'var(--bar)' }}></i>Payout</span><span><i style=${{ background: 'var(--good)' }}></i>Profit</span></div></div>
+    ${has && b ? html`<div className="readout"><b>${b.label}</b><span>Payout <b className="num">${R0(b.inc)}</b></span><span>Profit <b className=${'num ' + (b.profit < 0 ? 'neg' : '')}>${R0(b.profit)}</b></span><span>${fmtN(b.n)} order${b.n === 1 ? '' : 's'}</span></div>` : null}
+    <div className="chart" ref=${ref}>
+      ${has ? html`<svg width=${w} height=${H} viewBox=${`0 0 ${w} ${H}`} role="img" aria-label="Payout and profit chart" onMouseLeave=${() => setSel(null)}>
+        ${ticks.map(t => html`<g key=${'t' + t}><line className=${t === 0 ? 'ch-zero' : 'ch-grid'} x1=${padL} x2=${w - padR} y1=${Y(t)} y2=${Y(t)}/><text className="ch-t" x=${padL - 6} y=${Y(t) + 4} textAnchor="end">${fmtShort(t)}</text></g>`)}
+        ${bs.map((bb, ix) => {
+          const cx = padL + bw * ix + bw / 2, x = cx - barW / 2;
+          const yInc = Y(Math.max(0, bb.inc)), yZero = Y(0);
+          const pr = bb.profit;
+          return html`<g key=${bb.key} onMouseEnter=${() => setSel(ix)} onClick=${() => setSel(ix)}>
+            ${ix === si ? html`<rect className="ch-sel" x=${padL + bw * ix} y=${padT} width=${bw} height=${ih}/>` : null}
+            <rect className="ch-inc" x=${x} y=${yInc} width=${barW} height=${Math.max(0, yZero - yInc)} rx=${Math.min(3, barW / 3)}/>
+            ${pr > 0 ? html`<rect className="ch-pro" x=${x + barW * 0.22} y=${Y(pr)} width=${barW * 0.56} height=${Math.max(0, yZero - Y(pr))} rx=${Math.min(2, barW / 4)}/>` : null}
+            ${pr < 0 ? html`<rect className="ch-loss" x=${x + barW * 0.22} y=${yZero} width=${barW * 0.56} height=${Math.max(1, Y(pr) - yZero)}/>` : null}
+            <rect x=${padL + bw * ix} y=${padT} width=${bw} height=${ih} fill="transparent"/>
+            ${ix % every === 0 ? html`<text className="ch-t" x=${cx} y=${H - 6} textAnchor="middle">${bb.label}</text>` : null}
+          </g>`;
+        })}
+      </svg>` : html`<${Empty} icon="chart" title="No orders in this period" text="Your daily payout and profit appear here once orders are imported or added."/>`}
+    </div></div>`;
+}
+function PlatformCard({ T }){
+  const rows = ['m', 'f', 'x'].map(k => ({ k, ...(T.plat[k] || { n: 0, inc: 0, profit: 0 }) })).filter(r => r.n || r.k !== 'x');
+  const max = Math.max(1, ...rows.map(r => r.inc));
+  return html`<div className="card"><div className="card-h"><div><h2>By platform</h2><p>Orders, payout and profit</p></div></div>
+    <div className="plats">${rows.map(r => html`<div key=${r.k} className="plat-row">
+      <div className="plat-top"><${Plat} p=${r.k}/><span className="muted small">${fmtN(r.n)} orders</span></div>
+      <div className="bar"><i className=${PLAT[r.k].cls} style=${{ width: (r.inc / max * 100) + '%' }}></i></div>
+      <div className="plat-top small"><span>Payout <b className="num">${R0(r.inc)}</b></span><span>Profit <b className=${'num ' + sgn(r.profit)}>${R0(r.profit)}</b></span></div>
+    </div>`)}</div></div>`;
+}
+function StartCard({ D }){
+  const np = D.plist.length;
+  const noCost = D.plist.filter(p => !(Number(p.cost) > 0)).length;
+  const hasExp = D.expenses.length > 0;
+  return html`<div className="card">
+    <div className="card-h"><div><h2>Set up your khata</h2><p>Three steps, then profit is worked out for you.</p></div>
+      <button className="btn btn-sm" onClick=${() => setSample(true)}>Preview with sample data</button></div>
+    <div className="steps">
+      <div className=${'step ' + (np && !noCost ? 'done' : '')}><span className="step-n">${np && !noCost ? html`<${Icon} n="check" s=${15}/>` : '1'}</span><b>${np ? `${np} product${np > 1 ? 's' : ''} added` : 'Add your products'}</b>
+        <p>${np ? (noCost ? `Fill in cost, stock and payout for ${noCost} product${noCost > 1 ? 's' : ''} so profit is correct.` : 'Costs and stock are filled in.') : 'Name, photos, cost per unit, stock in hand and what each platform pays you.'}</p>
+        <button className="btn btn-sm" onClick=${() => np ? go('products') : openProduct(null)}>${np ? 'Review products' : 'Add product'}</button></div>
+      <div className="step"><span className="step-n">2</span><b>Import your reports</b><p>Upload the Meesho or Flipkart orders file and the payment file. Orders, returns and payouts are matched for you.</p>
+        <button className="btn btn-sm btn-p" onClick=${() => go('import')}>Import report</button></div>
+      <div className=${'step ' + (hasExp ? 'done' : '')}><span className="step-n">${hasExp ? html`<${Icon} n="check" s=${15}/>` : '3'}</span><b>Add your expenses</b><p>Packing material, ads, courier, phone. They come off your profit.</p>
+        <button className="btn btn-sm" onClick=${() => openExpense(null)}>Add expense</button></div>
+    </div></div>`;
+}
+function HomeView(){
+  useStoreV();
+  const D = derive();
+  const [pk, setPk] = usePeriod();
+  const R = periodRange(pk);
+  const T = summarize(D, R);
+  T.bucketName = R.bucket === 'month' ? 'month' : 'day';
+  const A = allTime(D);
+  const U = unpaidOld(D);
+  const biz = D.settings.biz;
+  const low = D.plist.filter(p => p.active !== false && stockState(p, D) !== 'ok').sort((a, b) => (D.stock[a.id] || 0) - (D.stock[b.id] || 0)).slice(0, 5);
+  const top = [...T.prod.values()].sort((a, b) => b.q - a.q).slice(0, 6);
+  const margin = T.income > 0 ? pct(T.net, T.income) : 0;
+  const needSetup = !st.sample && (D.orders.length === 0 || D.plist.length === 0);
+  return html`
+    <div className="ph"><div className="ph-t"><h1>${biz ? biz : 'Your business'}</h1><p>${R.label} · ${dayLong(R.from)}${R.from !== R.to ? ' to ' + dayLong(R.to) : ''}</p></div><${PeriodChips} value=${pk} onChange=${setPk}/></div>
+    ${needSetup ? html`<${StartCard} D=${D}/>` : null}
+    <div className="hero">
+      <div className="hero-l"><span className="eyebrow">Net profit · ${R.label}</span>
+        <span className=${'hero-v ' + (T.net < 0 ? 'neg' : '')}>${R0(T.net)}</span>
+        <span className="hero-sub">${T.income > 0 ? `${margin}% of payout · ` : ''}${fmtN(T.n)} order${T.n === 1 ? '' : 's'}, ${fmtN(T.qSold)} unit${T.qSold === 1 ? '' : 's'} sold</span></div>
+      <div className="ledger">
+        <div className="ledger-r"><span>Payout received</span><span className="num">${R0(T.recv)}</span></div>
+        <div className="ledger-r"><span>Payout pending (estimated)</span><span className="num">${R0(T.expd)}</span></div>
+        <div className="ledger-r"><span>Product & packing cost</span><span className="num">${R0(-T.cost)}</span></div>
+        <div className="ledger-r"><span>Expenses</span><span className="num">${R0(-T.exp)}</span></div>
+        <div className="ledger-r"><span>Net profit</span><span className=${'num ' + (T.net < 0 ? 'neg' : '')}>${R0(T.net)}</span></div>
+      </div>
+    </div>
+    ${T.noCost.size || T.unlinked ? html`<${Note}>${T.noCost.size ? html`${T.noCost.size} product${T.noCost.size > 1 ? 's have' : ' has'} no cost price, so profit looks higher than it is. <button className="btn-link" onClick=${() => go('products', { filter: 'nocost' })}>Add costs</button>. ` : null}${T.unlinked ? html`${fmtN(T.unlinked)} order${T.unlinked > 1 ? 's aren’t' : ' isn’t'} linked to a product. <button className="btn-link" onClick=${() => go('orders', { status: 'unlinked' })}>Link them</button>.` : null}<//>` : null}
+    ${U.n ? html`<${Note} kind="info" icon="rupee">${fmtN(U.n)} delivered order${U.n > 1 ? 's' : ''} older than 14 days ${U.n > 1 ? 'have' : 'has'} no payment recorded (about ${R0(U.amt)}). Import your latest payment report, or check with the platform. <button className="btn-link" onClick=${() => go('orders', { status: 'unpaid', month: 'all' })}>See orders</button><//>` : null}
+    <div className="kpis">
+      <div className="kpi"><span className="kpi-l">Orders</span><span className="kpi-v">${fmtN(T.n)}</span><span className="kpi-s">${T.can ? fmtN(T.can) + ' cancelled' : 'not counting cancelled'}</span></div>
+      <div className="kpi"><span className="kpi-l">Sales value</span><span className="kpi-v">${R0(T.sale)}</span><span className="kpi-s">what customers paid</span></div>
+      <div className="kpi"><span className="kpi-l">Returns & RTO</span><span className=${'kpi-v ' + (pct(T.rto + T.ret, T.n) > 15 ? 'neg' : '')}>${pct(T.rto + T.ret, T.n)}%</span><span className="kpi-s">${fmtN(T.rto)} RTO · ${fmtN(T.ret)} returns</span></div>
+      <div className="kpi"><span className="kpi-l">Profit per order</span><span className=${'kpi-v ' + (T.n && T.profit / T.n < 0 ? 'neg' : '')}>${T.n ? R0(T.profit / T.n) : '—'}</span><span className="kpi-s">before expenses</span></div>
+    </div>
+    <div className="g-side"><${EarningsChart} T=${T}/><${PlatformCard} T=${T}/></div>
+    <div className="g2">
+      <div className="card"><div className="card-h"><div><h2>Stock</h2><p>${fmtN(A.units)} units worth ${R0(A.stockVal)} at cost</p></div><button className="btn btn-sm" onClick=${() => go('products')}>All products</button></div>
+        ${low.length ? html`<div className="list">${low.map(p => html`<button key=${p.id} className="lrow" onClick=${() => openProduct(p.id)}><${Thumb} p=${p} size=${40}/><div className="lrow-m"><div className="lrow-t">${p.name}</div><div className="lrow-s">${D.sold30[p.id] ? fmtN(D.sold30[p.id]) + ' sold in 30 days' : 'No sales in 30 days'}</div></div><div className="lrow-e"><${StockPill} p=${p} D=${D}/></div></button>`)}</div>`
+          : D.plist.length ? html`<${Empty} icon="check" title="Stock looks fine" text="Products running low will show here."/>` : html`<${Empty} icon="box" title="No products yet" text="Add products to track stock."><button className="btn btn-sm btn-p" onClick=${() => openProduct(null)}>Add product</button><//>`}
+      </div>
+      <div className="card"><div className="card-h"><div><h2>Since you started</h2><p>Your total money in and out</p></div></div>
+        <div className="ledger">
+          <div className="ledger-r"><span>Spent on stock</span><span className="num">${R0(A.invested)}</span></div>
+          <div className="ledger-r"><span>Spent on expenses</span><span className="num">${R0(A.exp)}</span></div>
+          <div className="ledger-r"><span>Received from platforms</span><span className="num">${R0(A.recv)}</span></div>
+          <div className="ledger-r"><span>Still to receive (estimated)</span><span className="num">${R0(A.expd)}</span></div>
+          <div className="ledger-r"><span>Stock in hand (at cost)</span><span className="num">${R0(A.stockVal)}</span></div>
+          <div className="ledger-r"><span>${A.net >= 0 ? 'Overall you are up' : 'Overall you are down'}</span><span className=${'num ' + sgn(A.net)}>${R0(A.net)}</span></div>
+        </div></div>
+    </div>
+    <div className="card"><div className="card-h"><div><h2>Best sellers · ${R.label}</h2><p>By units sold</p></div><button className="btn btn-sm" onClick=${() => go('reports')}>Full report</button></div>
+      ${top.length ? html`<div className="tbl-wrap"><table className="tbl"><thead><tr><th>Product</th><th className="r">Units</th><th className="r hide-sm">Payout</th><th className="r">Profit</th><th className="r hide-sm">Returns</th></tr></thead><tbody>
+        ${top.map(r => html`<tr key=${r.key}><td><div className="pn"><${Thumb} p=${D.products[r.pid] || { name: r.name }} size=${34}/><span>${r.name}</span></div></td><td className="r num">${fmtN(r.q)}</td><td className="r num hide-sm">${R0(r.inc)}</td><td className=${'r num ' + (r.profit < 0 ? 'neg' : '')}>${R0(r.profit)}</td><td className="r num hide-sm">${pct(r.back, r.n)}%</td></tr>`)}
+      </tbody></table></div>` : html`<${Empty} icon="orders" title="No sales in this period" text="Import your Meesho or Flipkart orders to see your best sellers."><button className="btn btn-sm btn-p" onClick=${() => go('import')}>Import report</button><//>`}
+    </div>`;
+}
+
+function ProductsView(){
+  useStoreV(); useUI();
+  const D = derive();
+  const [q, setQ] = useState('');
+  const [filter, setFilter] = useState(() => ui.params.filter || 'all');
+  const counts = { all: 0, low: 0, out: 0, nocost: 0, off: 0 };
+  for (const p of D.plist){ const s = stockState(p, D); if (p.active !== false){ counts.all++; if (s === 'low') counts.low++; if (s === 'out') counts.out++; } else counts.off++; if (!(Number(p.cost) > 0)) counts.nocost++; }
+  const ql = q.trim().toLowerCase();
+  const list = D.plist.filter(p => {
+    const s = stockState(p, D);
+    if (filter === 'off'){ if (p.active !== false) return false; }
+    else if (filter !== 'nocost' && p.active === false) return false;
+    if (filter === 'low' && s !== 'low') return false;
+    if (filter === 'out' && s !== 'out') return false;
+    if (filter === 'nocost' && Number(p.cost) > 0) return false;
+    if (ql && !(p.name || '').toLowerCase().includes(ql) && !(p.skus || []).some(x => x.toLowerCase().includes(ql)) && !(p.cat || '').toLowerCase().includes(ql)) return false;
+    return true;
+  });
+  const A = allTime(D);
+  const pack = p => p.packing != null && p.packing !== '' ? Number(p.packing) : Number(D.settings.packing) || 0;
+  return html`
+    <div className="ph"><div className="ph-t"><h1>Products</h1><p>${fmtN(counts.all)} active · ${fmtN(A.units)} units in stock · ${R0(A.stockVal)} at cost</p></div>
+      <div className="ph-a"><button className="btn" onClick=${() => openStock('buy')}><${Icon} n="stock"/>Stock in</button><button className="btn btn-p" onClick=${() => openProduct(null)}><${Icon} n="plus"/>Add product</button></div></div>
+    <div style=${{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+      <label style=${{ position: 'relative', flex: '1 1 240px', maxWidth: 380 }}><span className="sr">Search products</span><span style=${{ position: 'absolute', left: 11, top: 11, color: 'var(--ink-3)' }}><${Icon} n="search" s=${18}/></span><input className="in" style=${{ paddingLeft: 36 }} value=${q} onChange=${e => setQ(e.target.value)} placeholder="Search name, SKU or category"/></label>
+      <div className="chips">${[['all', 'Active'], ['low', 'Low stock'], ['out', 'Out of stock'], ['nocost', 'No cost'], ['off', 'Inactive']].map(([k, l]) => html`<button key=${k} className="chip" aria-pressed=${filter === k} onClick=${() => setFilter(k)}>${l}<span className="cnt">${counts[k]}</span></button>`)}</div>
+    </div>
+    ${list.length ? html`<div className="pgrid">${list.map(p => {
+      const cost = Number(p.cost) || 0;
+      const prof = k => p.payout && Number(p.payout[k]) > 0 ? Number(p.payout[k]) - cost - pack(p) : null;
+      const pm = prof('m'), pf = prof('f');
+      return html`<button key=${p.id} className="pcard" onClick=${() => openProduct(p.id)}>
+        <${Thumb} p=${p} size=${78}/>
+        <div className="pcard-m">
+          <div className="pcard-t">${p.name}</div>
+          <div className="pcard-row"><${StockPill} p=${p} D=${D}/>${(p.skus || []).slice(0, 2).map(s => html`<span key=${s} className="sku">${s}</span>`)}${(p.skus || []).length > 2 ? html`<span className="muted">+${p.skus.length - 2}</span>` : null}</div>
+          <div className="pcard-row"><span>Cost <b className=${'num ' + (cost ? '' : 'warn-t')}>${cost ? fmtINR(cost) : 'not set'}</b></span><span>Sold 30d <b className="num">${fmtN(D.sold30[p.id] || 0)}</b></span></div>
+          ${pm != null || pf != null ? html`<div className="pcard-row">${pm != null ? html`<span><${Plat} p="m"/> <b className=${'num ' + sgn(pm)}>${fmtINR(pm)}</b>/unit</span>` : null}${pf != null ? html`<span><${Plat} p="f"/> <b className=${'num ' + sgn(pf)}>${fmtINR(pf)}</b>/unit</span>` : null}</div>` : html`<div className="pcard-row muted">Add payout to see profit per unit</div>`}
+        </div></button>`;
+    })}</div>` : html`<div className="card">${D.plist.length ? html`<${Empty} icon="search" title="No products match" text="Try another search or filter."/>` : html`<${Empty} icon="box" title="Add your first product" text="Add each product once with its photos, cost and the SKU you use on Meesho or Flipkart. Imported orders are matched to products by SKU."><button className="btn btn-p" onClick=${() => openProduct(null)}><${Icon} n="plus"/>Add product</button><//>`}</div>`}`;
+}
+
+function OrdersView(){
+  useStoreV(); useUI();
+  const D = derive();
+  const cm = monthOf(today());
+  const months = [...new Set([cm, ...D.byMonth.keys()])].filter(Boolean).sort().reverse();
+  const [month, setMonth] = useState(() => ui.params.month || cm);
+  const [plat, setPlat] = useState('all');
+  const [status, setStatus] = useState(() => ui.params.status || 'all');
+  const [q, setQ] = useState('');
+  const [limit, setLimit] = useState(60);
+  const [loadingOld, setLoadingOld] = useState(false);
+  useEffect(() => { setLimit(60); }, [month, plat, status, q]);
+  const ql = q.trim().toLowerCase();
+  const base = D.orders.filter(o => (month === 'all' || monthOf(o.d) === month) && (plat === 'all' || o.p === plat));
+  const match = (o, s) => {
+    const c = D.calc.get(o);
+    if (s === 'all') return true;
+    if (s === 'unpaid') return !c.paid && (c.st === 'delivered' || c.st === 'shipped');
+    if (s === 'unlinked') return !o.pid;
+    if (s === 'returns') return c.st === 'rto' || c.st === 'return';
+    return c.st === s;
+  };
+  const counts = {}; for (const k of ['all', 'pending', 'shipped', 'delivered', 'returns', 'cancelled', 'unpaid', 'unlinked']) counts[k] = base.filter(o => match(o, k)).length;
+  const list = base.filter(o => match(o, status) && (!ql || [o.i, o.o, o.sku, o.t, D.products[o.pid] && D.products[o.pid].name].some(x => x && String(x).toLowerCase().includes(ql))));
+  let inc = 0, prof = 0; for (const o of list){ const c = D.calc.get(o); inc += c.income; prof += c.profit; }
+  async function loadOlder(){ setLoadingOld(true); await attempt(() => loadAllMonths(), 'All past months loaded'); setLoadingOld(false); }
+  return html`
+    <div className="ph"><div className="ph-t"><h1>Orders</h1><p>${fmtN(list.length)} order${list.length === 1 ? '' : 's'} · payout ${R0(inc)} · profit <span className=${prof < 0 ? 'neg' : ''}>${R0(prof)}</span></p></div>
+      <div className="ph-a"><button className="btn" onClick=${() => go('import')}><${Icon} n="upload"/>Import report</button><button className="btn btn-p" onClick=${openNewOrder}><${Icon} n="plus"/>Add order</button></div></div>
+    <div style=${{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+      <select className="in" style=${{ width: 'auto', minWidth: 150 }} value=${month} onChange=${e => setMonth(e.target.value)} aria-label="Month">
+        ${months.map(m => html`<option key=${m} value=${m}>${monthLabel(m)}</option>`)}<option value="all">All loaded months</option></select>
+      <div className="chips">${[['all', 'All'], ['m', 'Meesho'], ['f', 'Flipkart'], ['x', 'Other']].map(([k, l]) => html`<button key=${k} className="chip" aria-pressed=${plat === k} onClick=${() => setPlat(k)}>${l}</button>`)}</div>
+      <label style=${{ position: 'relative', flex: '1 1 200px', maxWidth: 320 }}><span className="sr">Search orders</span><span style=${{ position: 'absolute', left: 11, top: 11, color: 'var(--ink-3)' }}><${Icon} n="search" s=${18}/></span><input className="in" style=${{ paddingLeft: 36 }} value=${q} onChange=${e => setQ(e.target.value)} placeholder="Order ID, SKU or product"/></label>
+    </div>
+    <div className="chips">${[['all', 'All'], ['pending', 'Pending'], ['shipped', 'Shipped'], ['delivered', 'Delivered'], ['returns', 'Returns & RTO'], ['cancelled', 'Cancelled'], ['unpaid', 'Not paid yet'], ['unlinked', 'Not linked']].map(([k, l]) => html`<button key=${k} className="chip" aria-pressed=${status === k} onClick=${() => setStatus(k)}>${l}<span className="cnt">${counts[k]}</span></button>`)}</div>
+    <div className="card" style=${{ paddingBlock: 6 }}>
+      ${list.length ? html`<div className="list">${list.slice(0, limit).map(o => {
+        const c = D.calc.get(o); const pr = D.products[o.pid];
+        return html`<button key=${o.p + o.i} className="lrow" onClick=${() => openOrder(o.p, o.i)}>
+          <${Thumb} p=${pr || { name: o.t || o.sku || '?' }} size=${44}/>
+          <div className="lrow-m"><div className="lrow-t">${pr ? pr.name : (o.t || o.sku || 'Unknown item')}</div>
+            <div className="lrow-s"><${Plat} p=${o.p}/><span>${dayLabel(o.d)}</span><span>Qty ${c.q}</span>${!pr ? html`<span className="warn-t">Not linked</span>` : null}${o.sku && !pr ? html`<span className="sku">${o.sku}</span>` : null}</div></div>
+          <div className="lrow-e"><${Status} s=${c.st}/><span className="num">${c.paid ? fmtINR(c.recv) : c.expected ? '~' + fmtINR(c.expected) : '—'}</span><span className=${'small ' + sgn(c.profit)}><span className="num">${fmtINR(c.profit)}</span> profit</span></div>
+        </button>`;
+      })}</div>${list.length > limit ? html`<div className="more-btn"><button className="btn btn-sm" onClick=${() => setLimit(l => l + 100)}>Show more (${fmtN(list.length - limit)} left)</button></div>` : null}`
+      : html`<${Empty} icon="orders" title=${D.orders.length ? 'No orders match' : 'No orders yet'} text=${D.orders.length ? 'Try another month, platform or status.' : 'Import your Meesho or Flipkart orders file, or add an order by hand.'}>${D.orders.length ? null : html`<button className="btn btn-p" onClick=${() => go('import')}><${Icon} n="upload"/>Import report</button>`}<//>`}
+    </div>
+    ${!st.sample && !st.allLoaded && st.db ? html`<div className="pager">Showing the last 12 months. <button className="btn-link" disabled=${loadingOld} onClick=${loadOlder}>${loadingOld ? 'Loading…' : 'Load older months'}</button></div>` : null}
+    <p className="pager">~ means estimated payout, until the platform's payment report is imported.</p>`;
+}
+
+function ExpensesView(){
+  useStoreV();
+  const D = derive();
+  const cm = monthOf(today());
+  const months = [...new Set([cm, ...D.expenses.map(e => monthOf(e.d))])].sort().reverse();
+  const [month, setMonth] = useState(cm);
+  const list = D.expenses.filter(e => month === 'all' || monthOf(e.d) === month);
+  const total = list.reduce((a, e) => a + (Number(e.a) || 0), 0);
+  const byCat = {}; for (const e of list) byCat[e.c] = (byCat[e.c] || 0) + (Number(e.a) || 0);
+  const cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+  const max = Math.max(1, ...cats.map(c => c[1]));
+  return html`
+    <div className="ph"><div className="ph-t"><h1>Expenses</h1><p>${R0(total)} in ${month === 'all' ? 'all months' : monthLabel(month)}</p></div>
+      <div className="ph-a"><select className="in" style=${{ width: 'auto', minWidth: 150 }} value=${month} onChange=${e => setMonth(e.target.value)} aria-label="Month">${months.map(m => html`<option key=${m} value=${m}>${monthLabel(m)}</option>`)}<option value="all">All months</option></select>
+        <button className="btn btn-p" onClick=${() => openExpense(null)}><${Icon} n="plus"/>Add expense</button></div></div>
+    ${list.length ? html`<div className="g-side">
+      <div className="card" style=${{ paddingBlock: 6 }}><div className="list">${list.map(e => html`<button key=${e.id} className="lrow" onClick=${() => openExpense(e)}>
+        <span className="thumb" style=${{ width: 40, height: 40 }}><${Icon} n="wallet" s=${18}/></span>
+        <div className="lrow-m"><div className="lrow-t">${EXP_NAME[e.c] || 'Other'}</div><div className="lrow-s"><span>${dayLabel(e.d)}</span>${e.p ? html`<${Plat} p=${e.p}/>` : null}${e.n ? html`<span>${e.n}</span>` : null}</div></div>
+        <div className="lrow-e"><span className="num">${fmtINR(e.a)}</span></div></button>`)}</div></div>
+      <div className="card"><div className="card-h"><h2>Where the money went</h2></div>
+        <div style=${{ display: 'flex', flexDirection: 'column', gap: 12 }}>${cats.map(([k, v]) => html`<div key=${k} className="cat-bar"><span>${EXP_NAME[k] || 'Other'}</span><span className="num">${R0(v)}</span><div className="bar"><i style=${{ width: (v / max * 100) + '%' }}></i></div></div>`)}</div></div>
+    </div>` : html`<div className="card"><${Empty} icon="wallet" title="No expenses in this month" text="Add packing material, ads, courier, rent and other costs. They're taken off your profit."><button className="btn btn-p" onClick=${() => openExpense(null)}><${Icon} n="plus"/>Add expense</button><//></div>`}`;
+}
+
+function ReportsView(){
+  useStoreV();
+  const D = derive();
+  const [pk, setPk] = usePeriod();
+  const R = periodRange(pk);
+  const T = summarize(D, R);
+  const cm = monthOf(today());
+  const rows = [];
+  for (let i = 0; i < 12; i++){
+    const m = addMonths(cm, -i);
+    const s = D.isLoaded(m) ? computeMonthStats(m, D.byMonth.get(m) || [], D.products, D.settings) : D.stats[m];
+    const exp = D.expenses.filter(e => monthOf(e.d) === m).reduce((a, e) => a + (Number(e.a) || 0), 0);
+    const buy = D.moves.filter(x => x.k === 'buy' && monthOf(x.d) === m).reduce((a, x) => a + (Number(x.c) || 0), 0);
+    const n = s ? s.n : 0;
+    if (!n && !exp && !buy && i > 2) continue;
+    rows.push({ m, n, inc: s ? (s.recv || 0) + (s.expd || 0) : 0, cost: s ? s.cost || 0 : 0, profit: (s ? s.profit || 0 : 0) - exp, exp, buy, ret: s ? pct((s.rto || 0) + (s.ret || 0), n) : 0, rr: s ? (s.rto || 0) + (s.ret || 0) : 0 });
+  }
+  const tot = rows.reduce((a, r) => ({ n: a.n + r.n, inc: a.inc + r.inc, cost: a.cost + r.cost, exp: a.exp + r.exp, profit: a.profit + r.profit, buy: a.buy + r.buy, rr: a.rr + r.rr }), { n: 0, inc: 0, cost: 0, exp: 0, profit: 0, buy: 0, rr: 0 });
+  const prods = [...T.prod.values()].sort((a, b) => b.profit - a.profit);
+  function exportOrders(){
+    const out = [['Date', 'Platform', 'Order item ID', 'Order ID', 'Product', 'SKU', 'Qty', 'Status', 'Sale amount', 'Payout received', 'Expected payout', 'Product + packing cost', 'Profit', 'Payment date', 'Note']];
+    for (const o of D.orders){ if (!o.d || o.d < R.from || o.d > R.to) continue; const c = D.calc.get(o); const p = D.products[o.pid];
+      out.push([o.d, (PLAT[o.p] || PLAT.x).name, o.i, o.o || '', p ? p.name : (o.t || ''), o.sku || '', c.q, STATUS[c.st], o.s || '', c.paid ? c.recv : '', c.paid ? '' : c.expected, c.cost, c.profit, o.pd || '', o.n || '']); }
+    saveFile(`orders-${R.from}-to-${R.to}.csv`, toCSV(out));
+  }
+  function exportPL(){
+    const out = [['Month', 'Orders', 'Payout (received + pending)', 'Product & packing cost', 'Expenses', 'Net profit', 'Stock bought', 'Returns + RTO']];
+    for (const r of [...rows].reverse()) out.push([monthLabel(r.m), r.n, round2(r.inc), round2(r.cost), round2(r.exp), round2(r.profit), round2(r.buy), r.rr]);
+    saveFile(`profit-and-loss-${cm}.csv`, toCSV(out));
+  }
+  function exportProducts(){
+    const out = [['Product', 'SKUs', 'Category', 'Cost per unit', 'Packing', 'In stock', 'Stock value', 'Meesho price', 'Meesho payout', 'Flipkart price', 'Flipkart payout', 'Sold (30 days)']];
+    for (const p of D.plist){ const q = D.stock[p.id] || 0; out.push([p.name, (p.skus || []).join(' | '), p.cat || '', p.cost || 0, p.packing != null ? p.packing : D.settings.packing, q, round2(Math.max(0, q) * (Number(p.cost) || 0)), p.price && p.price.m || '', p.payout && p.payout.m || '', p.price && p.price.f || '', p.payout && p.payout.f || '', D.sold30[p.id] || 0]); }
+    saveFile(`products-stock-${today()}.csv`, toCSV(out));
+  }
+  return html`
+    <div className="ph"><div className="ph-t"><h1>Reports</h1><p>Month-wise profit and product performance</p></div>
+      <div className="ph-a"><button className="btn" onClick=${exportPL}><${Icon} n="down"/>Profit & loss CSV</button><button className="btn" onClick=${exportProducts}><${Icon} n="down"/>Products CSV</button></div></div>
+    <div className="card"><div className="card-h"><div><h2>Profit & loss by month</h2><p>Payout includes estimated pending payments. Profit is after product cost, packing and expenses.</p></div></div>
+      <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Month</th><th className="r hide-sm">Orders</th><th className="r">Payout</th><th className="r hide-sm">Product cost</th><th className="r hide-sm">Expenses</th><th className="r">Net profit</th><th className="r hide-sm">Stock bought</th><th className="r hide-sm">Returns</th></tr></thead>
+      <tbody>${rows.map(r => html`<tr key=${r.m}><td>${monthLabel(r.m)}</td><td className="r num hide-sm">${fmtN(r.n)}</td><td className="r num">${R0(r.inc)}</td><td className="r num hide-sm">${R0(r.cost)}</td><td className="r num hide-sm">${R0(r.exp)}</td><td className=${'r num ' + sgn(r.profit)}>${R0(r.profit)}</td><td className="r num hide-sm">${R0(r.buy)}</td><td className="r num hide-sm">${r.ret}%</td></tr>`)}</tbody>
+      <tfoot><tr><td>Total</td><td className="r num hide-sm">${fmtN(tot.n)}</td><td className="r num">${R0(tot.inc)}</td><td className="r num hide-sm">${R0(tot.cost)}</td><td className="r num hide-sm">${R0(tot.exp)}</td><td className=${'r num ' + sgn(tot.profit)}>${R0(tot.profit)}</td><td className="r num hide-sm">${R0(tot.buy)}</td><td className="r num hide-sm">${pct(tot.rr, tot.n)}%</td></tr></tfoot></table></div></div>
+    <div className="ph"><h2>Products · ${R.label}</h2><${PeriodChips} value=${pk} onChange=${setPk}/></div>
+    <div className="card">
+      ${prods.length ? html`<div className="tbl-wrap"><table className="tbl"><thead><tr><th>Product</th><th className="r hide-sm">Orders</th><th className="r">Units</th><th className="r hide-sm">Payout</th><th className="r">Profit</th><th className="r hide-sm">Profit/unit</th><th className="r hide-sm">Returns</th><th className="r">In stock</th></tr></thead><tbody>
+        ${prods.map(r => html`<tr key=${r.key}><td><div className="pn"><${Thumb} p=${D.products[r.pid] || { name: r.name }} size=${34}/><span>${r.name}</span></div></td><td className="r num hide-sm">${fmtN(r.n)}</td><td className="r num">${fmtN(r.q)}</td><td className="r num hide-sm">${R0(r.inc)}</td><td className=${'r num ' + sgn(r.profit)}>${R0(r.profit)}</td><td className="r num hide-sm">${r.q ? fmtINR(r.profit / r.q) : '—'}</td><td className="r num hide-sm">${pct(r.back, r.n)}%</td><td className="r num">${r.pid && D.stock[r.pid] != null ? fmtN(D.stock[r.pid]) : '—'}</td></tr>`)}
+      </tbody></table></div>
+      <div style=${{ display: 'flex', justifyContent: 'flex-end', paddingTop: 12 }}><button className="btn btn-sm" onClick=${exportOrders}><${Icon} n="down" s=${16}/>Orders CSV for this period</button></div>`
+      : html`<${Empty} icon="chart" title="No orders in this period" text="Pick another period, or import your orders."/>`}
+    </div>`;
+}
+
+function SetupView(){
+  useStoreV();
+  const D = derive();
+  const [f, setF] = useState(() => ({ biz: st.settings.biz || '', packing: str(st.settings.packing), low: str(st.settings.low), fee: str(st.settings.fee) }));
+  const [busy, setBusy] = useState('');
+  const [usage, setUsage] = useState(null);
+  const [restore, setRestore] = useState(null);
+  const set = (k, v) => setF(x => ({ ...x, [k]: v }));
+  async function save(){ setBusy('save'); await attempt(() => saveSettings({ biz: f.biz.trim(), packing: num(f.packing) || 0, low: Math.round(num(f.low) || 0), fee: Math.min(90, Math.max(0, num(f.fee) || 0)) }), 'Settings saved'); setBusy(''); }
+  async function backup(){
+    setBusy('backup');
+    const r = await attempt(async () => { await loadAllMonths(); return JSON.stringify({ app: 'seller-khata', version: 1, exported: new Date().toISOString(), settings: st.settings, products: st.products, ord: st.chunks, exp: st.exp, stk: st.stk, stats: st.stats }); });
+    setBusy('');
+    if (r.ok) saveFile(`seller-khata-backup-${today()}.json`, r.r);
+  }
+  async function pickRestore(file){
+    try { const obj = JSON.parse(await file.text()); if (!obj || obj.app !== 'seller-khata') throw new Error('This isn’t a Seller Khata backup file.'); setRestore({ name: file.name, obj }); }
+    catch (e){ toast(e.message && !e.code ? e.message : 'Couldn’t read this backup file.', 'bad'); }
+  }
+  async function doRestore(){
+    const o = restore.obj; setBusy('restore');
+    await attempt(async () => {
+      requireDb();
+      const jobs = [];
+      for (const [id, p] of Object.entries(o.products || {})) jobs.push(['products/' + id, p]);
+      for (const [id, d] of Object.entries(o.ord || {})) jobs.push(['ord/' + id, d]);
+      for (const [m, d] of Object.entries(o.exp || {})) jobs.push(['exp/' + m, d]);
+      for (const [m, d] of Object.entries(o.stk || {})) jobs.push(['stk/' + m, d]);
+      for (const [m, d] of Object.entries(o.stats || {})) jobs.push(['stats/' + m, d]);
+      if (o.settings) jobs.push(['meta/settings', o.settings]);
+      for (const [path, data] of jobs){ await putDoc(path, data); if (path.startsWith('ord/')) st.chunks[path.slice(4)] = data; }
+      st.allLoaded = false; await loadAllMonths();
+    }, 'Backup restored');
+    setBusy(''); setRestore(null);
+  }
+  async function recalc(){
+    setBusy('recalc');
+    await attempt(async () => { await loadAllMonths(); const ms = new Set(); for (const ch of Object.values(st.chunks)) ms.add(ch.m); for (const m of Object.keys(st.stats)) ms.add(m); await refreshStats([...ms]); }, 'Totals recalculated');
+    setBusy('');
+  }
+  async function checkUsage(){ if (!st.assets){ toast('Photo storage is only visible to the owner.', 'bad'); return; } try { const r = await st.assets.list(); setUsage(r.usage); } catch (e){ toast(errText(e), 'bad'); } }
+  const canSave = !st.sample && !!st.db;
+  return html`
+    <div className="ph"><div className="ph-t"><h1>Setup</h1><p>Business details, profit settings and your data</p></div></div>
+    <div className="g2">
+      <div className="card" style=${{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <h2>Business & profit settings</h2>
+        <${Field} label="Business name" hint="Shown at the top of your dashboard"><input id="set-biz" className="in" value=${f.biz} onChange=${e => set('biz', e.target.value)} placeholder="e.g. Patel Home Store"/><//>
+        <div className="r2">
+          <${Field} label="Default packing cost" hint="Per unit: polybag, tape, label"><${Money} id="set-pack" value=${f.packing} onChange=${v => set('packing', v)}/><//>
+          <${Field} label="Low stock alert at" hint="Units, for products without their own"><input id="set-low" className="in num" inputMode="numeric" value=${f.low} onChange=${e => set('low', e.target.value)}/><//>
+        </div>
+        <${Field} label="Platform cut for estimates (%)" hint="Used only when a product has no payout set: estimated payout = sale amount minus this %. Your payment reports replace estimates with real amounts."><input id="set-fee" className="in num" inputMode="decimal" value=${f.fee} onChange=${e => set('fee', e.target.value)}/><//>
+        <div><button className="btn btn-p" onClick=${save} disabled=${!canSave || busy === 'save'}>${busy === 'save' ? 'Saving…' : 'Save settings'}</button></div>
+      </div>
+      <div className="card" style=${{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <h2>How profit is worked out</h2>
+        <div className="help"><ul>
+          <li><b>Payout</b> is what Meesho or Flipkart pays you, from the payment report. Until it arrives, the product's payout per unit is used as an estimate (shown with ~).</li>
+          <li><b>Product cost</b> is cost per unit × quantity, plus packing. Cancelled orders cost nothing.</li>
+          <li><b>RTO and returns</b>: the item comes back to stock, so only packing is lost, plus any return charge in the payment report. Untick “back in stock” on an order if the item came back damaged.</li>
+          <li><b>Net profit</b> = payout − product & packing cost − expenses.</li>
+          <li><b>Stock</b> = opening stock + stock in − orders shipped + good returns ± adjustments.</li>
+        </ul></div>
+      </div>
+    </div>
+    <div className="card" style=${{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <h2>Your data</h2>
+      <p className="small muted">Your khata is saved online, so it's the same on your phone and computer. Only you can see it.</p>
+      ${window.SK_AUTH ? html`<div style=${{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}><span className="small">Signed in as <b>${window.SK_AUTH.email || 'you'}</b></span><button className="btn btn-sm" onClick=${() => window.SK_AUTH.signOut()}>Sign out</button></div>` : null}
+      <div style=${{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <button className="btn" onClick=${backup} disabled=${!canSave || !!busy}><${Icon} n="down"/>${busy === 'backup' ? 'Preparing…' : 'Download backup'}</button>
+        <label className="btn" aria-disabled=${!canSave}><${Icon} n="upload"/>Restore from backup<input type="file" accept=".json,application/json" style=${{ display: 'none' }} disabled=${!canSave} onChange=${e => { if (e.target.files[0]) pickRestore(e.target.files[0]); e.target.value = ''; }}/></label>
+        <button className="btn" onClick=${recalc} disabled=${!canSave || !!busy}>${busy === 'recalc' ? 'Recalculating…' : 'Recalculate totals'}</button>
+        <button className="btn" onClick=${checkUsage} disabled=${!canSave}><${Icon} n="image"/>Photo storage</button>
+      </div>
+      ${usage ? html`<p className="small">Photos: <b className="num">${fmtN(usage.files)}</b> files, <b className="num">${(usage.bytes / 1048576).toFixed(1)} MB</b> of ${(usage.maxBytes / 1048576).toFixed(0)} MB used.</p>` : null}
+      ${restore ? html`<${Note} kind="bad">Restoring “${restore.name}” writes ${Object.keys(restore.obj.products || {}).length} products and all orders, expenses and stock entries from that file over the current ones with the same dates. <span style=${{ display: 'inline-flex', gap: 8, marginTop: 8 }}><${Confirm} label="Restore now" sure="Tap again to restore" onConfirm=${doRestore} disabled=${busy === 'restore'}/><button className="btn btn-sm" onClick=${() => setRestore(null)}>Cancel</button></span><//>` : null}
+      <div style=${{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+        ${st.sample ? html`<button className="btn" onClick=${() => setSample(false)}>Exit sample data</button>` : html`<button className="btn" onClick=${() => setSample(true)}>Preview with sample data</button>`}
+        <span className="small muted">Sample data is never saved. It only shows how the app looks with orders.</span>
+      </div>
+    </div>`;
+}
+
+function ImportView(){
+  useStoreV();
+  const D = derive();
+  const [plat, setPlat] = useState('m');
+  const [info, setInfo] = useState(null);
+  const [si, setSi] = useState(0);
+  const [hr, setHr] = useState(0);
+  const [map, setMap] = useState({});
+  const [links, setLinks] = useState({});
+  const [phase, setPhase] = useState('pick');
+  const [prog, setProg] = useState('');
+  const [res, setRes] = useState(null);
+  const [err, setErr] = useState('');
+  const [over, setOver] = useState(false);
+  const sheet = info ? info.sheets[si] : null;
+  const parsed = useMemo(() => sheet ? buildRows(sheet, hr, map) : null, [sheet, hr, map]);
+  const guessed = sheet ? guessPlat(sheet, hr) : null;
+  const idx = useMemo(() => orderIndex(), [st.v]);
+  const groups = useMemo(() => {
+    if (!parsed) return [];
+    const g = new Map();
+    for (const r of parsed.rows){
+      const ex = D.byKey.get(plat + ':' + r.i);
+      if (ex && ex.pid) continue;
+      if (r.sku && D.skuMap.get(normSku(r.sku))) continue;
+      const key = r.sku ? 's:' + normSku(r.sku) : 't:' + (r.t || 'unknown').toLowerCase().slice(0, 60);
+      const x = g.get(key) || { key, sku: r.sku || '', title: r.t || '', n: 0 };
+      x.n++; if (!x.title && r.t) x.title = r.t; g.set(key, x);
+    }
+    return [...g.values()].sort((a, b) => b.n - a.n);
+  }, [parsed, plat, st.v]);
+  const counts = useMemo(() => {
+    if (!parsed) return null;
+    let add = 0, upd = 0, pay = 0;
+    for (const r of parsed.rows){ if (idx.has(plat + ':' + r.i)) upd++; else add++; if (Object.keys(r.settles).length) pay++; }
+    return { add, upd, pay };
+  }, [parsed, plat, idx]);
+  async function onFile(file){
+    if (!file) return;
+    setErr(''); setPhase('parsing'); setRes(null);
+    try {
+      const inf = await readFile(file);
+      if (!inf.sheets.length) throw new Error('This file is empty.');
+      let best = 0, det = null;
+      inf.sheets.forEach((s, ix) => { const d = detectSheet(s); if (!det || d.score > det.score){ det = d; best = ix; } });
+      setInfo(inf); setSi(best); setHr(det.hr); setMap(det.map); setLinks({});
+      const g = guessPlat(inf.sheets[best], det.hr); if (g) setPlat(g);
+      setPhase('review');
+    } catch (e){ setErr(e.message || 'Couldn’t read this file.'); setPhase('pick'); }
+  }
+  function pickSheet(ix){ setSi(ix); const d = detectSheet(info.sheets[ix]); setHr(d.hr); setMap(d.map); }
+  function setHeaderRow(n){ const r = Math.max(0, Math.min((sheet.text.length || 1) - 1, n)); setHr(r); setMap(mapHeaders((sheet.text[r] || []).map(normH))); }
+  function reset(){ setInfo(null); setPhase('pick'); setRes(null); setErr(''); setLinks({}); }
+  async function run(){
+    if (!parsed || !parsed.rows.length) return;
+    setPhase('importing'); setProg('Preparing…');
+    const r = await attempt(async () => {
+      requireDb();
+      const resolved = {};
+      for (const g of groups){
+        const l = links[g.key];
+        if (l === 'new'){
+          const id = await saveProduct({ name: g.title || g.sku || 'New product', skus: g.sku ? [g.sku] : [], cost: 0, open: 0, price: {}, payout: {}, images: [], active: true });
+          resolved[g.key] = id;
+        } else if (l){
+          resolved[g.key] = l;
+          if (g.sku){ const pr = st.products[l]; if (pr && !(pr.skus || []).some(s => normSku(s) === normSku(g.sku))) await saveProduct({ ...pr, skus: [...(pr.skus || []), g.sku] }); }
+        }
+      }
+      const skuMap = new Map(); for (const p of Object.values(st.products)) for (const s of (p.skus || [])) skuMap.set(normSku(s), p.id);
+      const months = new Set(parsed.rows.map(x => monthOf(x.d || x.pd || today())));
+      setProg('Loading your earlier orders…');
+      await ensureMonths([...months]);
+      const ix = orderIndex(); const edits = []; let add = 0, upd = 0, pay = 0;
+      for (const x of parsed.rows){
+        const cid = ix.get(plat + ':' + x.i); const old = cid ? st.chunks[cid].rows[x.i] : null;
+        const o = old ? { ...old, set: { ...(old.set || {}) } } : { i: x.i, p: plat, set: {}, rs: true, src: 'imp' };
+        for (const k of ['o', 'd', 'sku', 't', 'q', 's', 'st', 'sr', 'pd']) if (x[k] !== undefined && x[k] !== '') o[k] = x[k];
+        if (Object.keys(x.settles).length){ Object.assign(o.set, x.settles); pay++; }
+        if (!Object.keys(o.set).length) delete o.set;
+        if (!o.d) o.d = x.pd || today();
+        if (!o.q) o.q = 1;
+        if (!o.st) o.st = o.set ? 'delivered' : 'pending';
+        if (!o.pid){ const pid = (x.sku && skuMap.get(normSku(x.sku))) || resolved[x.sku ? 's:' + normSku(x.sku) : 't:' + (x.t || 'unknown').toLowerCase().slice(0, 60)]; if (pid) o.pid = pid; }
+        o.u = Date.now();
+        edits.push({ p: plat, i: x.i, next: o }); if (old) upd++; else add++;
+      }
+      setProg(`Saving ${fmtN(edits.length)} orders…`);
+      await commitOrders(edits, (a, b) => setProg(`Saving… ${Math.round(a / b * 100)}%`));
+      return { add, upd, pay, linked: edits.filter(e => e.next.pid).length, total: edits.length };
+    });
+    if (r.ok){ setRes(r.r); setPhase('done'); } else setPhase('review');
+  }
+  const help = plat === 'f'
+    ? html`<ul><li><b>Orders file</b>: in Seller Hub, open Orders or Reports and download the orders report (CSV or Excel). It brings in status: delivered, returned, cancelled.</li><li><b>Payment file</b>: open Payments and download the settlement report (Excel). Its Orders sheet has the bank settlement value for each order item. This is what you actually received.</li></ul>`
+    : plat === 'm'
+    ? html`<ul><li><b>Orders file</b>: in the Meesho Supplier Panel, open Orders and download the orders list (CSV). It brings in status: delivered, RTO, returns, cancelled.</li><li><b>Payment file</b>: open Payments and download the payment report (Excel). Its Order Payments sheet has the final settlement amount for each sub order. This is what you actually received.</li></ul>`
+    : html`<ul><li>Any CSV or Excel file with one row per order works. You'll match its columns on the next step.</li></ul>`;
+  return html`
+    <div className="ph"><div className="ph-t"><h1>Import report</h1><p>Bring in orders and payments from your seller panel. Importing the same file twice is safe, because orders are matched by their ID.</p></div></div>
+    ${phase === 'done' && res ? html`<div className="card"><${Empty} icon="check" title="Import finished" text=${`${fmtN(res.add)} new order${res.add === 1 ? '' : 's'} added and ${fmtN(res.upd)} updated. ${res.pay ? fmtN(res.pay) + ' payment' + (res.pay === 1 ? '' : 's') + ' recorded. ' : ''}${res.total - res.linked ? fmtN(res.total - res.linked) + ' order' + (res.total - res.linked === 1 ? ' is' : 's are') + ' not linked to a product yet.' : 'All orders are linked to products.'}`}>
+        <div style=${{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}><button className="btn btn-p" onClick=${() => go('home')}>See dashboard</button><button className="btn" onClick=${() => go('orders')}>View orders</button><button className="btn" onClick=${reset}>Import another file</button></div><//></div>` : null}
+    ${phase === 'pick' || phase === 'parsing' ? html`
+      <div className="card" style=${{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div className="field"><span>Report from</span><div className="seg" role="group">${[['m', 'Meesho'], ['f', 'Flipkart'], ['x', 'Other']].map(([k, l]) => html`<button key=${k} aria-pressed=${plat === k} onClick=${() => setPlat(k)}>${l}</button>`)}</div></div>
+        <div className="help">${help}<p className="muted">Upload the file exactly as downloaded. Opening and saving it in Excel first can damage long order IDs.</p></div>
+        <label className=${'drop' + (over ? ' over' : '')} onDragOver=${e => { e.preventDefault(); setOver(true); }} onDragLeave=${() => setOver(false)} onDrop=${e => { e.preventDefault(); setOver(false); onFile(e.dataTransfer.files[0]); }}>
+          <${Icon} n="upload" s=${28}/><b>${phase === 'parsing' ? 'Reading file…' : 'Choose a CSV or Excel file'}</b><span className="small muted">or drag it here · .csv, .xlsx, .xls</span>
+          <input type="file" accept=".csv,.xlsx,.xls,.xlsm,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" disabled=${phase === 'parsing'} onChange=${e => { onFile(e.target.files[0]); e.target.value = ''; }}/>
+        </label>
+        ${err ? html`<${Note} kind="bad">${err}<//>` : null}
+      </div>` : null}
+    ${(phase === 'review' || phase === 'importing') && sheet && parsed ? html`
+      <div className="card" style=${{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div className="card-h" style=${{ marginBottom: 0 }}><div><h2>${info.name}</h2><p>${fmtN(parsed.total)} rows with an order ID · ${fmtN(parsed.rows.length)} unique orders</p></div><button className="btn btn-sm" onClick=${reset} disabled=${phase === 'importing'}>Choose another file</button></div>
+        <div className="field"><span>Report from</span><div className="seg" role="group">${[['m', 'Meesho'], ['f', 'Flipkart'], ['x', 'Other']].map(([k, l]) => html`<button key=${k} aria-pressed=${plat === k} onClick=${() => setPlat(k)}>${l}</button>`)}</div></div>
+        <div className="r2">
+          ${info.sheets.length > 1 ? html`<${Field} label="Sheet"><select className="in" value=${si} onChange=${e => pickSheet(Number(e.target.value))}>${info.sheets.map((s, ix) => html`<option key=${ix} value=${ix}>${s.name}</option>`)}</select><//>` : null}
+          <${Field} label="Column names are on row"><input className="in num" type="number" min="1" value=${hr + 1} onChange=${e => setHeaderRow((parseInt(e.target.value) || 1) - 1)}/><//>
+        </div>
+        ${guessed && guessed !== plat ? html`<${Note}>This looks like a ${PLAT[guessed].name} file. <button className="btn-link" onClick=${() => setPlat(guessed)}>Switch to ${PLAT[guessed].name}</button><//>` : null}
+        ${map.id == null ? html`<${Note} kind="bad">Pick the column that holds the order item ID (Sub Order No on Meesho, Order item ID on Flipkart). It's needed to match orders.<//>` : null}
+        ${parsed.sci ? html`<${Note} kind="bad">${fmtN(parsed.sci)} order IDs look damaged (like 4.36E+17), probably because the file was saved in Excel. Download the report again and upload it without opening it.<//>` : null}
+        ${map.id != null && !parsed.rows.length ? html`<${Note} kind="bad">No orders found below row ${hr + 1}. Check that the order item ID column and the column-names row are right.<//>` : null}
+        ${parsed.bad ? html`<${Note}>${fmtN(parsed.bad)} rows were skipped because their order ID doesn't look like an ID.<//>` : null}
+        ${map.id != null && map.date == null && parsed.rows.length ? html`<${Note}>No order date column found. ${parsed.noDate ? 'Orders without a date use the payment date or today.' : ''}<//>` : null}
+        <div className="sec-t">Columns</div>
+        <div className="map-grid">
+          <span className="hd">Field</span><span className="hd">Column in your file</span><span className="hd sample">First value</span>
+          ${FIELDS.map(fd => {
+            const ci = map[fd.k]; const first = ci != null ? (sheet.text.slice(hr + 1).find(r => r && r[ci] !== '' && r[ci] != null) || [])[ci] : '';
+            return html`<${React.Fragment} key=${fd.k}><span><b>${fd.label}</b>${fd.req ? html` <span className="neg">*</span>` : null}${fd.help ? html`<br/><span className="small muted">${fd.help}</span>` : null}</span>
+              <select className="in" value=${ci == null ? '' : ci} onChange=${e => { const v = e.target.value; setMap(m => { const n = { ...m }; if (v === '') delete n[fd.k]; else { for (const k of Object.keys(n)) if (n[k] === Number(v)) delete n[k]; n[fd.k] = Number(v); } return n; }); }}>
+                <option value="">Not in this file</option>
+                ${(sheet.text[hr] || []).map((h, ix) => html`<option key=${ix} value=${ix}>${colName(ix)} · ${String(h || '(blank)').slice(0, 48)}</option>`)}
+              </select><span className="sample">${first ? String(first).slice(0, 40) : '—'}</span><//>`;
+          })}
+        </div>
+        ${parsed.rows.length ? html`<div className="sec-t">Preview</div>
+          <div className="tbl-wrap"><table className="tbl nowrap"><thead><tr><th>Order item ID</th><th>Date</th><th>SKU</th><th className="r">Qty</th><th>Status</th><th className="r">Sale</th><th className="r">Payout</th></tr></thead><tbody>
+            ${parsed.rows.slice(0, 6).map(x => html`<tr key=${x.i}><td className="num">${x.i}</td><td>${x.d ? dayLabel(x.d) : '—'}</td><td className="num">${x.sku || '—'}</td><td className="r num">${x.q || 1}</td><td>${x.st ? html`<${Status} s=${x.st}/>` : '—'}</td><td className="r num">${x.s ? fmtINR(x.s) : '—'}</td><td className="r num">${Object.keys(x.settles).length ? fmtINR(sumSet(x.settles)) : '—'}</td></tr>`)}
+          </tbody></table></div>` : null}
+      </div>
+      ${groups.length ? html`<div className="card" style=${{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div><h2>Match products</h2><p className="small muted">These SKUs aren't linked to any of your products yet. Link each one so cost and stock are counted. The app remembers the SKU for next time.</p></div>
+        <div className="list">${groups.map(g => html`<div key=${g.key} className="lrow" style=${{ gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)' }}>
+          <div className="lrow-m"><div className="lrow-t">${g.sku ? html`<span className="sku">${g.sku}</span>` : 'No SKU'}</div><div className="lrow-s">${g.title ? g.title : ''} · ${fmtN(g.n)} order${g.n === 1 ? '' : 's'}</div></div>
+          <select className="in" value=${links[g.key] || ''} onChange=${e => setLinks(l => ({ ...l, [g.key]: e.target.value }))} aria-label=${'Product for ' + (g.sku || g.title)}>
+            <option value="">Leave unlinked for now</option><option value="new">＋ Create new product</option>
+            ${D.plist.map(p => html`<option key=${p.id} value=${p.id}>${p.name}</option>`)}
+          </select></div>`)}</div>
+      </div>` : null}
+      <div className="card" style=${{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="grow" style=${{ minWidth: 220 }}>${counts ? html`<b>${fmtN(counts.add)}</b> new order${counts.add === 1 ? '' : 's'} · <b>${fmtN(counts.upd)}</b> to update · <b>${fmtN(counts.pay)}</b> with payout` : null}<div className="small muted">${phase === 'importing' ? prog : `Platform: ${PLAT[plat].name}`}</div></div>
+        <button className="btn btn-p" onClick=${run} disabled=${phase === 'importing' || !parsed.rows.length || map.id == null}>${phase === 'importing' ? 'Importing…' : `Import ${fmtN(parsed.rows.length)} orders`}</button>
+      </div>` : null}`;
+}
+
+/* ======================= app ======================= */
+const NAV = [['home', 'home', 'Dashboard'], ['orders', 'orders', 'Orders'], ['products', 'box', 'Products'], ['expenses', 'wallet', 'Expenses'], ['reports', 'chart', 'Reports'], ['import', 'upload', 'Import report'], ['setup', 'sliders', 'Setup']];
+function App(){
+  useStoreV(); useUI();
+  const view = ui.view;
+  const V = { home: HomeView, orders: OrdersView, products: ProductsView, expenses: ExpensesView, reports: ReportsView, setup: SetupView, import: ImportView }[view] || HomeView;
+  const live = st.phase === 'live' || st.sample;
+  const tabs = [['home', 'home', 'Home'], ['orders', 'orders', 'Orders'], ['add', 'plus', 'Add'], ['products', 'box', 'Products'], ['more', 'more', 'More']];
+  return html`<div className="app">
+    <aside className="side"><div className="side-in">
+      <${Brand}/>
+      <nav aria-label="Main">${NAV.map(([k, i, l]) => html`<button key=${k} className="nav-btn" aria-current=${view === k ? 'page' : undefined} onClick=${() => go(k)}><${Icon} n=${i}/>${l}</button>`)}</nav>
+      <div className="side-add"><button className="btn btn-p" onClick=${openQuickAdd}><${Icon} n="plus"/>Add</button></div>
+      <div className="side-foot"><span className=${'dot ' + (st.db && !st.sample ? '' : 'off')}></span><span>${st.sample ? 'Sample data, not saved' : st.db ? 'Saved online · same on phone and computer' : st.phase === 'loading' ? 'Connecting…' : 'Saving unavailable in this view'}</span></div>
+    </div></aside>
+    <div className="col">
+      <header className="topbar"><${Brand} compact=${true}/><span className="grow"></span>
+        <button className="icon-btn" aria-label="Import report" onClick=${() => go('import')}><${Icon} n="upload"/></button></header>
+      <main className="main"><div className="wrap" key=${view}>
+        <${Banners}/>
+        ${live || st.phase === 'nodb' ? html`<${V}/>` : html`<${Loading}/>`}
+      </div></main>
+    </div>
+    <nav className="tabbar" aria-label="Main">${tabs.map(([k, i, l]) => k === 'add'
+      ? html`<button key=${k} className="tab tab-add" onClick=${openQuickAdd} aria-label="Add"><span className="plus"><${Icon} n="plus" s=${24}/></span></button>`
+      : html`<button key=${k} className="tab" aria-current=${(k === view || (k === 'more' && ['expenses', 'reports', 'import', 'setup'].includes(view))) ? 'page' : undefined} onClick=${() => k === 'more' ? openMore() : go(k)}><${Icon} n=${i} s=${22}/>${l}</button>`)}</nav>
+    <${SheetHost}/><${Toasts}/>
+  </div>`;
+}
+ReactDOM.createRoot(document.getElementById('app')).render(html`<${App}/>`);
+init();
+})();
+</script>
+<script>if ('serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
+</body>
+</html>
