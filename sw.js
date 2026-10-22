@@ -1,5 +1,5 @@
 /* Seller Khata offline shell: the app opens even with a weak connection. Your data always comes live from Supabase. */
-const CACHE = 'seller-khata-v2';
+const CACHE = 'seller-khata-v3';
 const SHELL = ['./', './index.html', './adapter.js', './config.js', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => { self.skipWaiting(); e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).catch(() => {})); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });

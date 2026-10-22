@@ -350,6 +350,40 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14px}
 .cat-bar .bar i{background:var(--accent)}
 .more-btn{display:flex;justify-content:center;padding-top:12px}
 .pager{font-size:13px;color:var(--ink-3);text-align:center;padding-top:8px}
+
+/* simple mode */
+.profit{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;display:flex;flex-direction:column;gap:6px}
+.profit .big{font-family:var(--f-num);font-weight:600;font-size:clamp(36px,11vw,52px);letter-spacing:-.04em;line-height:1.05;overflow-wrap:anywhere}
+.profit p{color:var(--ink-2);font-size:15.5px}
+details.how{margin-top:6px}
+details.how>summary{cursor:pointer;color:var(--accent);font-weight:600;font-size:14px;list-style:none;display:inline-flex;align-items:center;gap:6px}
+details.how>summary::-webkit-details-marker{display:none}
+details.how>summary::after{content:"\25BE";font-size:12px}
+details.how[open]>summary::after{content:"\25B4"}
+details.how .ledger{margin-top:8px;max-width:460px}
+details.more{border:1px solid var(--line);border-radius:12px;padding:0 14px;background:var(--surface)}
+details.more>summary{cursor:pointer;list-style:none;padding:12px 0;font-weight:600;color:var(--accent);display:flex;align-items:center;gap:8px}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary::before{content:"+";font-family:var(--f-num);font-size:18px;width:18px;text-align:center;line-height:1}
+details.more[open]>summary::before{content:"\2212"}
+details.more[open]{padding-bottom:14px}
+details.more .inner{display:flex;flex-direction:column;gap:14px}
+.acts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media(max-width:760px){.acts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.act{display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-align:left;min-width:0}
+.act:hover{border-color:var(--accent)}
+.act .ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);margin-bottom:2px}
+.act b{font-size:16.5px;line-height:1.2}
+.act span{font-size:12.5px;color:var(--ink-3);line-height:1.3}
+.stat2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.steps2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(max-width:700px){.steps2{grid-template-columns:minmax(0,1fr)}}
+.thumb.warnbg{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.note.good{background:var(--good-soft);color:var(--good)}
+.stockline{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;color:var(--ink-2);padding:10px 12px;border-radius:10px;background:var(--surface-2)}
+.big-in .in{height:50px;font-size:19px}
+.chips.chips-wrap{flex-wrap:wrap;overflow:visible}
+.lrow-e .btn{pointer-events:none}
 </style>
 <style>
 .auth-ov{position:fixed;inset:0;z-index:100;background:var(--bg);display:grid;place-items:center;overflow:auto;padding-block:max(24px,env(safe-area-inset-top,0px)) max(24px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -1066,7 +1100,7 @@ const Plat = ({ p }) => { const x = PLAT[p] || PLAT.x; return html`<span classNa
 const Status = ({ s }) => html`<span className=${'pill s-' + (STATUS[s] ? s : 'pending')}>${STATUS[s] || 'Pending'}</span>`;
 function StockPill({ p, D }){
   const q = D.stock[p.id] || 0, s = stockState(p, D);
-  const t = s === 'out' ? (q < 0 ? `Short by ${fmtN(-q)}` : 'Out of stock') : s === 'low' ? `Low · ${fmtN(q)} left` : `${fmtN(q)} in stock`;
+  const t = s === 'out' ? 'Out of stock' : s === 'low' ? `Only ${fmtN(q)} left` : `${fmtN(q)} in stock`;
   return html`<span className=${'pill stock-' + s}>${t}</span>`;
 }
 function Field({ label, hint, children }){ return html`<label className="field"><span>${label}</span>${children}${hint ? html`<small>${hint}</small>` : null}</label>`; }
@@ -1109,20 +1143,22 @@ function Note({ kind, icon, children }){ return html`<div className=${'note ' + 
 
 /* ======================= sheets ======================= */
 function openQuickAdd(){
-  openSheet(close => html`<${Sheet} title="Add to your khata" close=${close}>
+  openSheet(close => html`<${Sheet} title="What do you want to add?" close=${close}>
     <div className="qa">
-      <button className="qa-btn" onClick=${() => { close(); openNewOrder(); }}><${Icon} n="orders"/><b>Order</b><span>A sale from any platform, offline or Amazon</span></button>
-      <button className="qa-btn" onClick=${() => { close(); openExpense(null); }}><${Icon} n="wallet"/><b>Expense</b><span>Packing, ads, courier, rent and other costs</span></button>
-      <button className="qa-btn" onClick=${() => { close(); openStock('buy'); }}><${Icon} n="stock"/><b>Stock in</b><span>New stock you bought from a supplier</span></button>
-      <button className="qa-btn" onClick=${() => { close(); openProduct(null); }}><${Icon} n="box"/><b>Product</b><span>With photos, cost and selling prices</span></button>
-      <button className="qa-btn" onClick=${() => { close(); go('import'); }}><${Icon} n="upload"/><b>Import report</b><span>Meesho or Flipkart orders and payment files</span></button>
-      <button className="qa-btn" onClick=${() => { close(); openStock('adj'); }}><${Icon} n="sliders"/><b>Adjust stock</b><span>Fix the count after damage or a recount</span></button>
+      <button className="qa-btn" onClick=${() => { close(); openNewOrder(); }}><${Icon} n="orders"/><b>Sale</b><span>A sale you made offline, on WhatsApp or Amazon</span></button>
+      <button className="qa-btn" onClick=${() => { close(); openExpense(null); }}><${Icon} n="wallet"/><b>Expense</b><span>Money you spent: packing, ads, courier</span></button>
+      <button className="qa-btn" onClick=${() => { close(); openStock('buy'); }}><${Icon} n="stock"/><b>Add stock</b><span>New pieces you bought</span></button>
+      <button className="qa-btn" onClick=${() => { close(); go('import'); }}><${Icon} n="upload"/><b>Upload file</b><span>Meesho or Flipkart report</span></button>
+    </div>
+    <div style=${{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      <button className="btn btn-sm" onClick=${() => { close(); openProduct(null); }}><${Icon} n="plus" s=${16}/>New product</button>
+      <button className="btn btn-sm" onClick=${() => { close(); openStock('adj'); }}><${Icon} n="sliders" s=${16}/>Fix stock count</button>
     </div></${Sheet}>`);
 }
 function openMore(){
   openSheet(close => html`<${Sheet} title="More" close=${close}>
     <div className="list">
-      ${[['expenses', 'wallet', 'Expenses', 'Packing, ads, courier and other costs'], ['reports', 'chart', 'Reports', 'Month-wise profit, product-wise sales, downloads'], ['import', 'upload', 'Import report', 'Meesho & Flipkart orders and payments'], ['setup', 'sliders', 'Setup', 'Business details, profit settings, backup']].map(([v, i, t, s]) => html`
+      ${[['expenses', 'wallet', 'Expenses', 'Packing, ads, courier and other costs'], ['reports', 'chart', 'Reports', 'Month-wise profit, product-wise sales, downloads'], ['import', 'upload', 'Upload file', 'Meesho or Flipkart orders and payments'], ['setup', 'sliders', 'Setup', 'Business details, profit settings, backup']].map(([v, i, t, s]) => html`
         <button key=${v} className="lrow" onClick=${() => { close(); go(v); }}><span className="thumb" style=${{ width: 40, height: 40 }}><${Icon} n=${i}/></span><div className="lrow-m"><div className="lrow-t">${t}</div><div className="lrow-s">${s}</div></div><span></span></button>`)}
     </div></${Sheet}>`);
 }
@@ -1144,8 +1180,8 @@ function ProductSheet({ pid, close }){
   useStoreV();
   const D = derive();
   const existing = pid ? D.products[pid] : null;
-  const [f, setF] = useState(() => productForm(existing));
-  const [tab, setTab] = useState('details');
+  const curStock = existing ? (D.stock[pid] || 0) : 0;
+  const [f, setF] = useState(() => ({ ...productForm(existing), pcs: existing ? String(Math.max(0, curStock)) : '', pcsTouched: false }));
   const [busy, setBusy] = useState(false);
   const [upl, setUpl] = useState(0);
   const imgs = useRef(f.images);
@@ -1153,7 +1189,8 @@ function ProductSheet({ pid, close }){
   const set = (k, v) => setF(x => ({ ...x, [k]: v }));
   const defPack = Number(D.settings.packing) || 0;
   const cost = num(f.cost) || 0, pack = f.packing !== '' ? (num(f.packing) || 0) : defPack;
-  const unitProfit = pay => { const v = num(pay); return v > 0 ? v - cost - pack : null; };
+  const unitProfit = pay => { const v = num(pay); return v > 0 && cost > 0 ? v - cost - pack : null; };
+  const pm = unitProfit(f.mPay), pf = unitProfit(f.fPay);
   const skuList = f.skus.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
   const clash = skuList.find(s => { const o = D.skuMap.get(normSku(s)); return o && o !== pid; });
   function setImages(next){
@@ -1162,7 +1199,7 @@ function ProductSheet({ pid, close }){
   }
   async function addPhotos(files){
     if (st.sample){ toast(errText({ code: 'sample' }), 'bad'); return; }
-    if (!st.assets){ toast('Photo upload is only available to the owner of this khata, signed in to Claude.', 'bad'); return; }
+    if (!st.assets){ toast('Photo upload works only when you are signed in.', 'bad'); return; }
     const list = [...files].slice(0, 8);
     setUpl(n => n + list.length);
     for (const file of list){
@@ -1180,160 +1217,170 @@ function ProductSheet({ pid, close }){
   }
   function makeCover(id){ setImages([id, ...imgs.current.filter(x => x !== id)]); }
   async function save(){
-    if (!f.name.trim()){ toast('Give the product a name.', 'bad'); return; }
-    if (clash){ toast(`SKU “${clash}” already belongs to another product.`, 'bad'); return; }
+    if (!f.name.trim()){ toast('Type the product name.', 'bad'); return; }
+    if (clash){ toast(`SKU “${clash}” is already used by another product.`, 'bad'); return; }
+    const pcs = f.pcs.trim() === '' ? null : num(f.pcs);
+    if (f.pcs.trim() !== '' && (pcs == null || pcs < 0)){ toast('Pieces must be a number, like 25.', 'bad'); return; }
     const price = {}, payout = {};
     if (num(f.mPrice) != null) price.m = num(f.mPrice); if (num(f.fPrice) != null) price.f = num(f.fPrice);
     if (num(f.mPay) != null) payout.m = num(f.mPay); if (num(f.fPay) != null) payout.f = num(f.fPay);
     const doc = { ...(existing || {}), name: f.name.trim(), skus: [...new Set(skuList)], cat: f.cat.trim(), cost: num(f.cost) != null ? num(f.cost) : 0,
-      packing: f.packing === '' ? null : num(f.packing), low: f.low === '' ? null : num(f.low), open: Math.round(num(f.open) || 0),
+      packing: f.packing === '' ? null : num(f.packing), low: f.low === '' ? null : num(f.low),
       price, payout, note: f.note.trim(), active: f.active, images: imgs.current };
+    if (!existing) doc.open = Math.round(pcs || 0);
     setBusy(true);
-    const r = await attempt(() => saveProduct(doc), existing ? 'Product saved' : 'Product added');
+    const r = await attempt(async () => {
+      const id = await saveProduct(doc);
+      if (existing && f.pcsTouched && pcs != null){
+        const now = derive().stock[id] || 0; const diff = Math.round(pcs) - now;
+        if (diff) await putItem('stk', { id: uid('k'), d: today(), pid: id, q: diff, c: 0, k: 'adj', why: 'count' });
+      }
+      return id;
+    }, existing ? 'Product saved' : 'Product added');
     setBusy(false);
     if (r.ok){
       close();
       const newSkus = skuList.map(normSku);
       const relink = D.orders.filter(o => !o.pid && o.sku && newSkus.includes(normSku(o.sku)));
-      if (relink.length) attempt(() => commitOrders(relink.map(o => ({ p: o.p, i: o.i, next: { ...o, pid: r.r, u: Date.now() } }))), `Linked ${relink.length} order${relink.length > 1 ? 's' : ''} to this product`);
+      if (relink.length) attempt(() => commitOrders(relink.map(o => ({ p: o.p, i: o.i, next: { ...o, pid: r.r, u: Date.now() } }))), `Matched ${relink.length} order${relink.length > 1 ? 's' : ''} to this product`);
     }
   }
   async function del(){ setBusy(true); const r = await attempt(() => deleteProduct(pid), 'Product deleted'); setBusy(false); if (r.ok) close(); }
   const moves = existing ? D.moves.filter(m => m.pid === pid) : [];
-  const months = existing ? [...D.byMonth.entries()].map(([m, os]) => {
-    let out = 0, back = 0; for (const o of os){ if (o.pid !== pid) continue; const c = D.calc.get(o); if (c.st === 'cancelled') continue; out += c.q; if ((c.st === 'rto' || c.st === 'return') && o.rs !== false) back += c.q; }
-    return { m, out, back };
-  }).filter(x => x.out).sort((a, b) => b.m.localeCompare(a.m)).slice(0, 6) : [];
   const footer = html`
     ${existing ? html`<${Confirm} label="Delete" sure="Tap again to delete" onConfirm=${del} disabled=${busy}/>` : null}
     <span className="grow"></span>
     <button className="btn" onClick=${close}>Cancel</button>
-    <button className="btn btn-p" onClick=${save} disabled=${busy || upl > 0}>${upl > 0 ? 'Uploading photos…' : busy ? 'Saving…' : 'Save product'}</button>`;
-  return html`<${Sheet} title=${existing ? existing.name : 'New product'} close=${close} footer=${tab === 'details' ? footer : null} wide=${true}>
-    ${existing ? html`<div className="tabs" role="tablist">
-      <button role="tab" aria-selected=${tab === 'details'} onClick=${() => setTab('details')}>Details</button>
-      <button role="tab" aria-selected=${tab === 'stock'} onClick=${() => setTab('stock')}>Stock & sales</button></div>` : null}
-    ${tab === 'details' ? html`
-      <div className="field"><span>Photos</span>
-        <div className="photos">
-          ${f.images.map((id, ix) => html`<div className="photo" key=${id}><img src=${imgUrl(id)} alt=${'Photo ' + (ix + 1)}/>${ix === 0 ? html`<span className="cover">Cover</span>` : null}
-            <div className="photo-tools">${ix > 0 ? html`<button type="button" aria-label="Make this the cover photo" onClick=${() => makeCover(id)}>Cover</button>` : html`<span></span>`}<${Confirm} className="danger" label="✕" aria="Remove photo" sure="Remove?" onConfirm=${() => removePhoto(id)}/></div></div>`)}
-          ${upl > 0 ? html`<div className="photo-add" aria-live="polite">Uploading ${upl}…</div>` : null}
-          <label className="photo-add"><${Icon} n="image"/>Add photos<input type="file" accept="image/*" multiple onChange=${e => { addPhotos(e.target.files); e.target.value = ''; }}/></label>
-        </div>
-        <small>The first photo is the cover. Photos are resized to save space.</small>
+    <button className="btn btn-p" onClick=${save} disabled=${busy || upl > 0}>${upl > 0 ? 'Uploading photo…' : busy ? 'Saving…' : 'Save'}</button>`;
+  return html`<${Sheet} title=${existing ? 'Edit product' : 'New product'} close=${close} footer=${footer}>
+    <div className="field"><span>Photo</span>
+      <div className="photos">
+        ${f.images.map((id, ix) => html`<div className="photo" key=${id}><img src=${imgUrl(id)} alt=${'Photo ' + (ix + 1)}/>${ix === 0 && f.images.length > 1 ? html`<span className="cover">Main</span>` : null}
+          <div className="photo-tools">${ix > 0 ? html`<button type="button" aria-label="Make this the main photo" onClick=${() => makeCover(id)}>Main</button>` : html`<span></span>`}<${Confirm} className="danger" label="✕" aria="Remove photo" sure="Remove?" onConfirm=${() => removePhoto(id)}/></div></div>`)}
+        ${upl > 0 ? html`<div className="photo-add" aria-live="polite">Uploading…</div>` : null}
+        <label className="photo-add"><${Icon} n="image"/>Add photo<input type="file" accept="image/*" multiple onChange=${e => { addPhotos(e.target.files); e.target.value = ''; }}/></label>
       </div>
-      <${Field} label="Product name"><input id="p-name" className="in" value=${f.name} onChange=${e => set('name', e.target.value)} placeholder="e.g. Ice Roller for Face (Pack of 2)"/><//>
+    </div>
+    <${Field} label="Product name"><input id="p-name" className="in" value=${f.name} onChange=${e => set('name', e.target.value)} placeholder="e.g. Ice Roller (Pack of 2)"/><//>
+    <div className="r2">
+      <${Field} label="Cost of 1 piece" hint="What you paid for one piece"><${Money} id="p-cost" value=${f.cost} onChange=${v => set('cost', v)}/><//>
+      <${Field} label="Pieces you have now" hint=${!existing ? 'Count the pieces in hand' : curStock < 0 ? `You sold ${fmtN(-curStock)} more than you added. Type your real count.` : 'Change it if your count is different'}><input id="p-open" className="in num" inputMode="numeric" value=${f.pcs} onChange=${e => setF(x => ({ ...x, pcs: e.target.value, pcsTouched: true }))} placeholder="0"/><//>
+    </div>
+    <div className="field"><span>Money you get for 1 piece</span>
+      <div className="r2">
+        <${Field} label=${html`<${Plat} p="m"/>`}><${Money} id="p-mPay" value=${f.mPay} onChange=${v => set('mPay', v)} placeholder="Not sold here"/><//>
+        <${Field} label=${html`<${Plat} p="f"/>`}><${Money} id="p-fPay" value=${f.fPay} onChange=${v => set('fPay', v)} placeholder="Not sold here"/><//>
+      </div>
+      <small>What Meesho or Flipkart pays you after their fees. Leave it empty if you don't sell there.</small>
+    </div>
+    ${pm != null || pf != null
+      ? html`<div className="note good"><${Icon} n="rupee" s=${18}/><div>Profit on 1 piece: ${pm != null ? html`<b className="num">${fmtINR(pm)}</b> on Meesho` : null}${pm != null && pf != null ? ' · ' : ''}${pf != null ? html`<b className="num">${fmtINR(pf)}</b> on Flipkart` : null}${pack ? html`<span className="muted"> (after ${fmtINR(pack)} packing)</span>` : null}</div></div>`
+      : html`<p className="small muted">Fill the cost and the money you get to see your profit on 1 piece.</p>`}
+    ${existing ? html`<div className="stockline"><span>Sold in last 30 days: <b className="num">${fmtN(D.sold30[pid] || 0)}</b></span><button className="btn btn-sm" onClick=${() => openStock('buy', pid)}><${Icon} n="plus" s=${16}/>Add stock</button></div>` : null}
+    <details className="more"><summary>More details (optional)</summary><div className="inner">
       <div className="r2 stack-sm">
-        <${Field} label="SKU codes" hint="The SKU you used on Meesho/Flipkart. Separate several with commas."><input id="p-sku" className="in num" value=${f.skus} onChange=${e => set('skus', e.target.value)} placeholder="IR-CAPSULE-P2-PURPLE"/><//>
+        <${Field} label="SKU code" hint="The SKU you typed on Meesho or Flipkart. It matches uploaded orders to this product. Several? Separate with commas."><input id="p-sku" className="in num" value=${f.skus} onChange=${e => set('skus', e.target.value)} placeholder="IR-CAPSULE-P2-PURPLE"/><//>
         <${Field} label="Category"><input id="p-cat" className="in" value=${f.cat} onChange=${e => set('cat', e.target.value)} placeholder="Beauty, Kitchen…"/><//>
       </div>
       ${clash ? html`<${Note} kind="bad">SKU “${clash}” is already used by ${D.products[D.skuMap.get(normSku(clash))].name}.<//>` : null}
-      <div className="r3">
-        <${Field} label="Cost per unit" hint="What one unit cost you, with transport"><${Money} id="p-cost" value=${f.cost} onChange=${v => set('cost', v)}/><//>
-        <${Field} label="Packing per unit" hint=${'Blank uses default ' + fmtINR(defPack)}><${Money} id="p-pack" value=${f.packing} onChange=${v => set('packing', v)} placeholder=${String(defPack)}/><//>
-        <${Field} label=${existing ? 'Opening stock' : 'Stock you have now'} hint=${existing ? 'Units before you started tracking' : 'Units in hand today'}><input id="p-open" className="in num" inputMode="numeric" value=${f.open} onChange=${e => set('open', e.target.value)} placeholder="0"/><//>
+      <div className="r2">
+        <${Field} label="Selling price on Meesho"><${Money} id="p-mPrice" value=${f.mPrice} onChange=${v => set('mPrice', v)}/><//>
+        <${Field} label="Selling price on Flipkart"><${Money} id="p-fPrice" value=${f.fPrice} onChange=${v => set('fPrice', v)}/><//>
       </div>
       <div className="r2">
-        ${[['m', 'Meesho', 'mPrice', 'mPay'], ['f', 'Flipkart', 'fPrice', 'fPay']].map(([k, n, pk, yk]) => {
-          const up = unitProfit(f[yk]);
-          return html`<div className="box" key=${k}>
-            <div className="plat-box-h"><${Plat} p=${k}/>${up != null ? html`<span className=${'calc ' + (up < 0 ? 'neg' : '')}>Profit/unit <b>${fmtINR(up)}</b></span>` : html`<span className="calc muted">Add payout to see profit</span>`}</div>
-            <div className="r2">
-              <${Field} label="Selling price"><${Money} id=${'p-' + pk} value=${f[pk]} onChange=${v => set(pk, v)}/><//>
-              <${Field} label="You get (payout)"><${Money} id=${'p-' + yk} value=${f[yk]} onChange=${v => set(yk, v)}/><//>
-            </div></div>`;
-        })}
+        <${Field} label="Packing cost for 1 piece" hint=${'Empty = ' + fmtINR(defPack) + ' (from Setup)'}><${Money} id="p-pack" value=${f.packing} onChange=${v => set('packing', v)} placeholder=${String(defPack)}/><//>
+        <${Field} label="Warn me when stock is at" hint=${'Empty = ' + (D.settings.low || 0) + ' pieces'}><input id="p-low" className="in num" inputMode="numeric" value=${f.low} onChange=${e => set('low', e.target.value)} placeholder=${String(D.settings.low || 0)}/><//>
       </div>
-      <small className="muted small">Payout is what the platform pays you per unit after its fees and shipping. It's used to estimate profit until the payment report arrives.</small>
-      <div className="r2">
-        <${Field} label="Low stock alert at" hint=${'Blank uses default ' + (D.settings.low || 0) + ' units'}><input id="p-low" className="in num" inputMode="numeric" value=${f.low} onChange=${e => set('low', e.target.value)} placeholder=${String(D.settings.low || 0)}/><//>
-        <${Field} label="Notes"><input id="p-note" className="in" value=${f.note} onChange=${e => set('note', e.target.value)} placeholder="Supplier, size, colour…"/><//>
-      </div>
-      <label className="check"><input type="checkbox" checked=${f.active} onChange=${e => set('active', e.target.checked)}/><span>Active product <span className="muted">(untick to hide it from lists when you stop selling it)</span></span></label>
-    ` : html`
-      <div className="r3">
-        <div className="kpi"><span className="kpi-l">In stock</span><span className=${'kpi-v ' + ((D.stock[pid] || 0) <= 0 ? 'neg' : '')}>${fmtN(D.stock[pid] || 0)}</span><span className="kpi-s">units</span></div>
-        <div className="kpi"><span className="kpi-l">Stock value</span><span className="kpi-v">${R0(Math.max(0, D.stock[pid] || 0) * (Number(existing.cost) || 0))}</span><span className="kpi-s">at ${fmtINR(Number(existing.cost) || 0)} each</span></div>
-        <div className="kpi"><span className="kpi-l">Sold · 30 days</span><span className="kpi-v">${fmtN(D.sold30[pid] || 0)}</span><span className="kpi-s">${(D.sold30[pid] || 0) > 0 ? `about ${Math.max(1, Math.round((D.stock[pid] || 0) / ((D.sold30[pid] || 1) / 30)))} days of stock` : 'units'}</span></div>
-      </div>
-      <div style=${{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <button className="btn btn-p" onClick=${() => openStock('buy', pid)}><${Icon} n="stock"/>Stock in</button>
-        <button className="btn" onClick=${() => openStock('adj', pid)}><${Icon} n="sliders"/>Adjust</button>
-      </div>
-      <div className="sec-t">Stock history</div>
-      <div className="list">
-        <div className="lrow"><span className="thumb" style=${{ width: 36, height: 36 }}><${Icon} n="box" s=${18}/></span><div className="lrow-m"><div className="lrow-t">Opening stock</div><div className="lrow-s">Set on the product</div></div><div className="lrow-e"><span className="num">${fmtN(Number(existing.open) || 0)}</span></div></div>
+      <${Field} label="Notes"><input id="p-note" className="in" value=${f.note} onChange=${e => set('note', e.target.value)} placeholder="Supplier, size, colour…"/><//>
+      <label className="check"><input type="checkbox" checked=${!f.active} onChange=${e => set('active', !e.target.checked)}/><span>Hide this product (I stopped selling it)</span></label>
+      ${existing && moves.length ? html`<div className="sec-t">Stock history</div><div className="list">
         ${moves.map(m => html`<button key=${m.id} className="lrow" onClick=${() => openStock(m.k, pid, m)}>
-          <span className="thumb" style=${{ width: 36, height: 36 }}><${Icon} n=${m.k === 'buy' ? 'stock' : 'sliders'} s=${18}/></span>
-          <div className="lrow-m"><div className="lrow-t">${m.k === 'buy' ? 'Stock in' : (ADJ_WHY.find(x => x[0] === m.why) || [0, 'Adjustment'])[1]}</div><div className="lrow-s">${dayLong(m.d)}${m.sup ? ' · ' + m.sup : ''}${m.k === 'buy' && m.c ? ' · ' + fmtINR(m.c) : ''}</div></div>
+          <span className="thumb" style=${{ width: 34, height: 34 }}><${Icon} n=${m.k === 'buy' ? 'stock' : 'sliders'} s=${17}/></span>
+          <div className="lrow-m"><div className="lrow-t">${m.k === 'buy' ? 'Stock added' : (ADJ_WHY.find(x => x[0] === m.why) || [0, 'Count fixed'])[1]}</div><div className="lrow-s">${dayLong(m.d)}${m.sup ? ' · ' + m.sup : ''}${m.k === 'buy' && m.c ? ' · paid ' + fmtINR(m.c) : ''}</div></div>
           <div className="lrow-e"><span className=${'num ' + sgn(m.q)}>${m.q > 0 ? '+' : ''}${fmtN(m.q)}</span></div></button>`)}
-        ${months.map(x => html`<div key=${x.m} className="lrow"><span className="thumb" style=${{ width: 36, height: 36 }}><${Icon} n="orders" s=${18}/></span><div className="lrow-m"><div className="lrow-t">Orders · ${monthLabel(x.m)}</div><div className="lrow-s">${x.back ? fmtN(x.back) + ' came back from returns/RTO' : 'Shipped to customers'}</div></div><div className="lrow-e"><span className="num neg">−${fmtN(x.out - x.back)}</span></div></div>`)}
-      </div>
-    `}
+      </div>` : null}
+    </div></details>
   </${Sheet}>`;
 }
-
 function StockSheet({ mode, pid, item, close }){
   useStoreV();
   const D = derive();
-  const [m, setM] = useState(item ? item.k : (mode || 'buy'));
-  const [f, setF] = useState(() => item ? { pid: item.pid, d: item.d, q: String(Math.abs(item.q)), sign: item.q < 0 ? -1 : 1, c: str(item.c), per: 'total', sup: item.sup || '', why: item.why || 'count', n: item.n || '', upd: false }
-    : { pid: pid || '', d: today(), q: '', sign: -1, c: '', per: 'total', sup: '', why: 'count', n: '', upd: true });
+  const m = item ? item.k : (mode || 'buy');
+  const [f, setF] = useState(() => item ? { pid: item.pid, d: item.d, q: String(item.q), c: str(item.c), sup: item.sup || '', why: item.why || 'count', n: item.n || '', real: '' }
+    : { pid: pid || '', d: today(), q: '', c: '', sup: '', why: 'count', n: '', real: '' });
   const [busy, setBusy] = useState(false);
   const set = (k, v) => setF(x => ({ ...x, [k]: v }));
   const p = D.products[f.pid];
+  const shown = p ? (D.stock[p.id] || 0) : 0;
   const q = Math.round(num(f.q) || 0);
-  const total = f.per === 'unit' ? (num(f.c) || 0) * q : (num(f.c) || 0);
+  const total = num(f.c) || 0;
   const unit = q > 0 ? total / q : 0;
-  const cur = p ? Math.max(0, D.stock[p.id] || 0) : 0;
   const oldCost = p ? Number(p.cost) || 0 : 0;
-  const avg = p && q > 0 ? (oldCost > 0 ? (cur * oldCost + total) / (cur + q) : unit) : 0;
+  const cur = Math.max(0, shown);
+  const avg = p && q > 0 && total > 0 ? (oldCost > 0 ? (cur * oldCost + total) / (cur + q) : unit) : 0;
+  const real = f.real.trim() === '' ? null : num(f.real);
+  const diff = real != null ? Math.round(real) - shown : null;
   async function save(){
-    if (!p){ toast('Choose a product.', 'bad'); return; }
-    if (!(q > 0)){ toast('Enter how many units.', 'bad'); return; }
+    if (!p){ toast('Choose the product.', 'bad'); return; }
+    let it, msg;
+    if (m === 'buy'){
+      if (!(q > 0)){ toast('Type how many pieces you bought.', 'bad'); return; }
+      it = { id: item ? item.id : uid('k'), d: f.d || today(), pid: p.id, q, c: round2(total), k: 'buy', sup: f.sup.trim() || undefined, n: f.n.trim() || undefined };
+      msg = `Added ${fmtN(q)} pieces to stock`;
+    } else if (item){
+      const qq = Math.round(num(f.q) || 0);
+      if (!qq){ toast('Type the change, like -2 or 3.', 'bad'); return; }
+      it = { ...item, d: f.d || item.d, q: qq, why: f.why, n: f.n.trim() || undefined }; msg = 'Saved';
+    } else {
+      if (real == null || real < 0){ toast('Type how many pieces you really have.', 'bad'); return; }
+      if (diff === 0){ toast('Your count already matches.'); close(); return; }
+      it = { id: uid('k'), d: today(), pid: p.id, q: diff, c: 0, k: 'adj', why: f.why, n: f.n.trim() || undefined };
+      msg = 'Stock count fixed';
+    }
     setBusy(true);
-    const it = m === 'buy'
-      ? { id: item ? item.id : uid('k'), d: f.d || today(), pid: p.id, q, c: round2(total), k: 'buy', sup: f.sup.trim() || undefined, n: f.n.trim() || undefined }
-      : { id: item ? item.id : uid('k'), d: f.d || today(), pid: p.id, q: f.sign * q, c: 0, k: 'adj', why: f.why, n: f.n.trim() || undefined };
     const r = await attempt(async () => {
       await updateItem('stk', item, it);
-      if (m === 'buy' && f.upd && total > 0) await saveProduct({ ...st.products[p.id], cost: round2(avg) });
-    }, m === 'buy' ? `Added ${fmtN(q)} units to stock` : 'Stock adjusted');
+      if (m === 'buy' && !item && avg > 0) await saveProduct({ ...st.products[p.id], cost: round2(avg) });
+    }, msg);
     setBusy(false); if (r.ok) close();
   }
-  async function del(){ setBusy(true); const r = await attempt(() => removeItem('stk', item), 'Entry deleted'); setBusy(false); if (r.ok) close(); }
-  return html`<${Sheet} title=${item ? 'Edit stock entry' : m === 'buy' ? 'Stock in' : 'Adjust stock'} close=${close} footer=${html`
+  async function del(){ setBusy(true); const r = await attempt(() => removeItem('stk', item), 'Deleted'); setBusy(false); if (r.ok) close(); }
+  const title = item ? (m === 'buy' ? 'Edit stock entry' : 'Edit count change') : m === 'buy' ? 'Add stock' : 'Fix stock count';
+  return html`<${Sheet} title=${title} close=${close} footer=${html`
       ${item ? html`<${Confirm} label="Delete" sure="Tap again to delete" onConfirm=${del} disabled=${busy}/>` : null}
       <span className="grow"></span><button className="btn" onClick=${close}>Cancel</button>
       <button className="btn btn-p" onClick=${save} disabled=${busy}>${busy ? 'Saving…' : 'Save'}</button>`}>
-    ${!item ? html`<div className="seg" role="group"><button aria-pressed=${m === 'buy'} onClick=${() => setM('buy')}>Stock in (purchase)</button><button aria-pressed=${m === 'adj'} onClick=${() => setM('adj')}>Adjust count</button></div>` : null}
     <${Field} label="Product"><${ProductSelect} id="s-prod" D=${D} value=${f.pid} onChange=${v => set('pid', v)}/><//>
-    ${p ? html`<p className="small muted">Now in stock: <b className="num">${fmtN(D.stock[p.id] || 0)}</b> units</p>` : null}
     ${m === 'buy' ? html`
-      <div className="r2">
-        <${Field} label="Units bought"><input id="s-q" className="in num" inputMode="numeric" value=${f.q} onChange=${e => set('q', e.target.value)} placeholder="0"/><//>
-        <${Field} label="Date"><input id="s-d" type="date" className="in" value=${f.d} onChange=${e => set('d', e.target.value)}/><//>
+      ${p ? html`<p className="small muted">In stock now: <b className="num">${fmtN(cur)}</b> pieces${shown < 0 ? ` (you sold ${fmtN(-shown)} more than you added)` : ''}</p>` : null}
+      <div className="r2 big-in">
+        <${Field} label="Pieces bought"><input id="s-q" className="in num" inputMode="numeric" value=${f.q} onChange=${e => set('q', e.target.value)} placeholder="0"/><//>
+        <${Field} label="Total money paid"><${Money} id="s-c" value=${f.c} onChange=${v => set('c', v)}/><//>
       </div>
-      <div className="seg" role="group" aria-label="Cost entered as"><button aria-pressed=${f.per === 'total'} onClick=${() => set('per', 'total')}>Total paid</button><button aria-pressed=${f.per === 'unit'} onClick=${() => set('per', 'unit')}>Price per unit</button></div>
+      ${q > 0 ? html`<div className="note info"><${Icon} n="info" s=${18}/><div>${total > 0 ? html`That is <b className="num">${fmtINR(unit)}</b> for 1 piece. ` : null}${!item ? html`You will have <b className="num">${fmtN(shown + q)}</b> pieces.` : null}${!item && total > 0 && oldCost > 0 && Math.abs(avg - oldCost) >= 0.01 ? html` Your cost of 1 piece becomes <b className="num">${fmtINR(avg)}</b> (average).` : null}</div></div>` : null}
+      ${!(q > 0 && total > 0) ? html`<p className="small muted">Include transport and GST you paid in the total.</p>` : null}
+      <details className="more"><summary>More details (optional)</summary><div className="inner">
+        <div className="r2 stack-sm">
+          <${Field} label="Date"><input id="s-d" type="date" className="in" value=${f.d} onChange=${e => set('d', e.target.value)}/><//>
+          <${Field} label="Supplier"><input id="s-sup" className="in" value=${f.sup} onChange=${e => set('sup', e.target.value)} placeholder="Shop or market name"/><//>
+        </div>
+        <${Field} label="Note"><input id="s-n" className="in" value=${f.n} onChange=${e => set('n', e.target.value)} placeholder="Optional"/><//>
+      </div></details>
+    ` : item ? html`
       <div className="r2">
-        <${Field} label=${f.per === 'unit' ? 'Price per unit' : 'Total paid'} hint="Include transport and GST you paid"><${Money} id="s-c" value=${f.c} onChange=${v => set('c', v)}/><//>
-        <${Field} label="Supplier"><input id="s-sup" className="in" value=${f.sup} onChange=${e => set('sup', e.target.value)} placeholder="Shop or market name"/><//>
-      </div>
-      ${q > 0 && total > 0 ? html`<p className="calc">Works out to <b>${fmtINR(unit)}</b> per unit · total <b>${fmtINR(total)}</b></p>` : null}
-      ${p && q > 0 && total > 0 ? html`<label className="check"><input type="checkbox" checked=${f.upd} onChange=${e => set('upd', e.target.checked)}/><span>Update product cost to the average <b className="num">${fmtINR(avg)}</b> per unit <span className="muted">(was ${fmtINR(oldCost)})</span></span></label>` : null}
-    ` : html`
-      <div className="seg" role="group"><button aria-pressed=${f.sign === -1} onClick=${() => set('sign', -1)}>Remove units</button><button aria-pressed=${f.sign === 1} onClick=${() => set('sign', 1)}>Add units</button></div>
-      <div className="r2">
-        <${Field} label="Units"><input id="s-q" className="in num" inputMode="numeric" value=${f.q} onChange=${e => set('q', e.target.value)} placeholder="0"/><//>
+        <${Field} label="Pieces changed by" hint="Minus for removed, like -2"><input id="s-q" className="in num" inputMode="numeric" value=${f.q} onChange=${e => set('q', e.target.value)}/><//>
         <${Field} label="Date"><input id="s-d" type="date" className="in" value=${f.d} onChange=${e => set('d', e.target.value)}/><//>
       </div>
       <${Field} label="Reason"><select id="s-why" className="in" value=${f.why} onChange=${e => set('why', e.target.value)}>${ADJ_WHY.map(([k, l]) => html`<option key=${k} value=${k}>${l}</option>`)}</select><//>
+    ` : html`
+      ${p ? html`<div className="note info"><${Icon} n="info" s=${18}/><div>The app shows <b className="num">${fmtN(cur)}</b> pieces of this product.${shown < 0 ? ` You sold ${fmtN(-shown)} more than you added.` : ''}</div></div>` : null}
+      <div className="big-in"><${Field} label="How many pieces do you really have?"><input id="s-real" className="in num" inputMode="numeric" value=${f.real} onChange=${e => set('real', e.target.value)} placeholder="Count them and type here"/><//></div>
+      ${diff != null && p && real >= 0 ? html`<p className="calc">${diff === 0 ? 'Your count already matches.' : html`After saving, stock will be <b className="num">${fmtN(Math.round(real))}</b> piece${Math.round(real) === 1 ? '' : 's'}.`}</p>` : null}
+      <div className="field"><span>Why is it different? (optional)</span>
+        <div className="chips chips-wrap" role="group">${[['damaged', 'Damaged'], ['count', 'Counted again'], ['sample', 'Gift or sample'], ['other', 'Other']].map(([k, l]) => html`<button key=${k} type="button" className="chip" aria-pressed=${f.why === k} onClick=${() => set('why', k)}>${l}</button>`)}</div></div>
     `}
-    <${Field} label="Note"><input id="s-n" className="in" value=${f.n} onChange=${e => set('n', e.target.value)} placeholder="Optional"/><//>
   </${Sheet}>`;
 }
-
 function OrderSheet({ p, i, close }){
   useStoreV();
   const D = derive();
@@ -1426,9 +1473,9 @@ function NewOrderSheet({ close }){
     const r = await attempt(() => commitOrders([{ p: f.p, i: id, next }]), 'Order added');
     setBusy(false); if (r.ok) close();
   }
-  return html`<${Sheet} title="New order" close=${close} footer=${html`<span className="grow"></span><button className="btn" onClick=${close}>Cancel</button><button className="btn btn-p" onClick=${save} disabled=${busy}>${busy ? 'Saving…' : 'Add order'}</button>`}>
+  return html`<${Sheet} title="Add a sale" close=${close} footer=${html`<span className="grow"></span><button className="btn" onClick=${close}>Cancel</button><button className="btn btn-p" onClick=${save} disabled=${busy}>${busy ? 'Saving…' : 'Add sale'}</button>`}>
     <div className="field"><span>Sold on</span><div className="seg" role="group">${Object.entries(PLAT).map(([k, v]) => html`<button key=${k} aria-pressed=${f.p === k} onClick=${() => set('p', k)}>${k === 'x' ? 'Other / offline' : v.name}</button>`)}</div>
-      <small>Meesho and Flipkart orders usually come in through Import report. Use this for offline, WhatsApp or Amazon sales.</small></div>
+      <small>Meesho and Flipkart orders come in when you upload their file. Use this for offline, WhatsApp or Amazon sales.</small></div>
     <${Field} label="Product"><${ProductSelect} id="n-prod" D=${D} value=${f.pid} onChange=${pick}/><//>
     <div className="r3">
       <${Field} label="Quantity"><input id="n-q" className="in num" inputMode="numeric" value=${f.q} onChange=${e => set('q', e.target.value)}/><//>
@@ -1549,96 +1596,86 @@ function PlatformCard({ T }){
     </div>`)}</div></div>`;
 }
 function StartCard({ D }){
-  const np = D.plist.length;
-  const noCost = D.plist.filter(p => !(Number(p.cost) > 0)).length;
-  const hasExp = D.expenses.length > 0;
+  const needCost = D.plist.filter(p => p.active !== false && !(Number(p.cost) > 0)).length;
   return html`<div className="card">
-    <div className="card-h"><div><h2>Set up your khata</h2><p>Three steps, then profit is worked out for you.</p></div>
-      <button className="btn btn-sm" onClick=${() => setSample(true)}>Preview with sample data</button></div>
-    <div className="steps">
-      <div className=${'step ' + (np && !noCost ? 'done' : '')}><span className="step-n">${np && !noCost ? html`<${Icon} n="check" s=${15}/>` : '1'}</span><b>${np ? `${np} product${np > 1 ? 's' : ''} added` : 'Add your products'}</b>
-        <p>${np ? (noCost ? `Fill in cost, stock and payout for ${noCost} product${noCost > 1 ? 's' : ''} so profit is correct.` : 'Costs and stock are filled in.') : 'Name, photos, cost per unit, stock in hand and what each platform pays you.'}</p>
-        <button className="btn btn-sm" onClick=${() => np ? go('products') : openProduct(null)}>${np ? 'Review products' : 'Add product'}</button></div>
-      <div className="step"><span className="step-n">2</span><b>Import your reports</b><p>Upload the Meesho or Flipkart orders file and the payment file. Orders, returns and payouts are matched for you.</p>
-        <button className="btn btn-sm btn-p" onClick=${() => go('import')}>Import report</button></div>
-      <div className=${'step ' + (hasExp ? 'done' : '')}><span className="step-n">${hasExp ? html`<${Icon} n="check" s=${15}/>` : '3'}</span><b>Add your expenses</b><p>Packing material, ads, courier, phone. They come off your profit.</p>
-        <button className="btn btn-sm" onClick=${() => openExpense(null)}>Add expense</button></div>
-    </div></div>`;
+    <div className="card-h"><div><h2>Start here</h2><p>Two steps, then your profit is worked out for you.</p></div></div>
+    <div className="steps2">
+      <div className=${'step ' + (D.plist.length && !needCost ? 'done' : '')}><span className="step-n">${D.plist.length && !needCost ? html`<${Icon} n="check" s=${15}/>` : '1'}</span><b>Add cost and pieces</b>
+        <p>${!D.plist.length ? 'Add your products with their cost and how many pieces you have.' : needCost ? `${needCost} product${needCost > 1 ? 's need' : ' needs'} a cost and a piece count.` : 'Done for all products.'}</p>
+        <button className="btn btn-sm" onClick=${() => D.plist.length ? go('products') : openProduct(null)}>${D.plist.length ? 'Open products' : 'Add product'}</button></div>
+      <div className="step"><span className="step-n">2</span><b>Upload your orders file</b><p>Download it from Meesho or Flipkart and upload it here. Add the payments file too when you get it.</p>
+        <button className="btn btn-sm btn-p" onClick=${() => go('import')}>Upload file</button></div>
+    </div>
+    <button className="btn-link small" style=${{ alignSelf: 'flex-start', marginTop: 12 }} onClick=${() => setSample(true)}>Or see a demo with sample data</button></div>`;
 }
+const HOME_PERIODS = [['today', 'Today'], ['7d', 'Last 7 days'], ['month', 'This month']];
 function HomeView(){
   useStoreV();
   const D = derive();
-  const [pk, setPk] = usePeriod();
+  const [pk, setPk] = useState(() => { try { const v = localStorage.getItem('sk_home_period'); return HOME_PERIODS.some(p => p[0] === v) ? v : 'month'; } catch (e) { return 'month'; } });
+  const setP = v => { setPk(v); try { localStorage.setItem('sk_home_period', v); } catch (e) {} };
   const R = periodRange(pk);
   const T = summarize(D, R);
-  T.bucketName = R.bucket === 'month' ? 'month' : 'day';
-  const A = allTime(D);
   const U = unpaidOld(D);
   const biz = D.settings.biz;
-  const low = D.plist.filter(p => p.active !== false && stockState(p, D) !== 'ok').sort((a, b) => (D.stock[a.id] || 0) - (D.stock[b.id] || 0)).slice(0, 5);
-  const top = [...T.prod.values()].sort((a, b) => b.q - a.q).slice(0, 6);
-  const margin = T.income > 0 ? pct(T.net, T.income) : 0;
-  const needSetup = !st.sample && (D.orders.length === 0 || D.plist.length === 0);
+  const word = { today: 'today', '7d': 'in the last 7 days', month: 'this month' }[R.k] || '';
+  const heading = { today: 'Profit today', '7d': 'Profit in the last 7 days', month: 'Profit this month' }[R.k] || 'Profit';
+  const low = D.plist.filter(p => p.active !== false && stockState(p, D) !== 'ok').sort((a, b) => (D.stock[a.id] || 0) - (D.stock[b.id] || 0));
+  const noCost = D.plist.filter(p => p.active !== false && !(Number(p.cost) > 0));
+  const unlinked = D.orders.filter(o => !o.pid).length;
+  const isNew = !st.sample && D.orders.length === 0;
+  const items = [];
+  low.slice(0, 3).forEach(p => items.push(html`<button key=${'l' + p.id} className="lrow" onClick=${() => openProduct(p.id)}><${Thumb} p=${p} size=${40}/><div className="lrow-m"><div className="lrow-t">${p.name}</div><div className="lrow-s">${(D.stock[p.id] || 0) < 0 ? `You sold ${fmtN(-(D.stock[p.id] || 0))} more than your stock. Add stock or fix the count.` : (D.stock[p.id] || 0) === 0 ? 'No pieces left. Add stock when you buy more.' : 'Running low. Buy more soon.'}</div></div><div className="lrow-e hide-sm"><${StockPill} p=${p} D=${D}/></div></button>`));
+  if (low.length > 3) items.push(html`<button key="lmore" className="lrow" onClick=${() => go('products', { filter: 'low' })}><span className="thumb" style=${{ width: 40, height: 40 }}><${Icon} n="box" s=${18}/></span><div className="lrow-m"><div className="lrow-t">${fmtN(low.length - 3)} more product${low.length - 3 > 1 ? 's are' : ' is'} low on stock</div></div><div className="lrow-e"><span className="btn btn-sm">See</span></div></button>`);
+  if (noCost.length) items.push(html`<button key="nc" className="lrow" onClick=${() => go('products', { filter: 'nocost' })}><span className="thumb warnbg" style=${{ width: 40, height: 40 }}><${Icon} n="alert" s=${18}/></span><div className="lrow-m"><div className="lrow-t">${fmtN(noCost.length)} product${noCost.length > 1 ? 's have' : ' has'} no cost</div><div className="lrow-s">Without it, profit looks bigger than it is.</div></div><div className="lrow-e"><span className="btn btn-sm">Add cost</span></div></button>`);
+  if (U.n) items.push(html`<button key="up" className="lrow" onClick=${() => go('orders', { status: 'unpaid', month: 'all' })}><span className="thumb warnbg" style=${{ width: 40, height: 40 }}><${Icon} n="rupee" s=${18}/></span><div className="lrow-m"><div className="lrow-t">${fmtN(U.n)} payment${U.n > 1 ? 's are' : ' is'} late</div><div className="lrow-s">Delivered over 14 days ago, no money yet (about ${R0(U.amt)}). Upload your payments file.</div></div><div className="lrow-e"><span className="btn btn-sm">See</span></div></button>`);
+  if (unlinked) items.push(html`<button key="ul" className="lrow" onClick=${() => go('orders', { status: 'unlinked', month: 'all' })}><span className="thumb warnbg" style=${{ width: 40, height: 40 }}><${Icon} n="orders" s=${18}/></span><div className="lrow-m"><div className="lrow-t">${fmtN(unlinked)} order${unlinked > 1 ? 's are' : ' is'} not matched to a product</div><div className="lrow-s">Pick the product so cost and stock are right.</div></div><div className="lrow-e"><span className="btn btn-sm">Fix</span></div></button>`);
   return html`
-    <div className="ph"><div className="ph-t"><h1>${biz ? biz : 'Your business'}</h1><p>${R.label} · ${dayLong(R.from)}${R.from !== R.to ? ' to ' + dayLong(R.to) : ''}</p></div><${PeriodChips} value=${pk} onChange=${setPk}/></div>
-    ${needSetup ? html`<${StartCard} D=${D}/>` : null}
-    <div className="hero">
-      <div className="hero-l"><span className="eyebrow">Net profit · ${R.label}</span>
-        <span className=${'hero-v ' + (T.net < 0 ? 'neg' : '')}>${R0(T.net)}</span>
-        <span className="hero-sub">${T.income > 0 ? `${margin}% of payout · ` : ''}${fmtN(T.n)} order${T.n === 1 ? '' : 's'}, ${fmtN(T.qSold)} unit${T.qSold === 1 ? '' : 's'} sold</span></div>
-      <div className="ledger">
-        <div className="ledger-r"><span>Payout received</span><span className="num">${R0(T.recv)}</span></div>
-        <div className="ledger-r"><span>Payout pending (estimated)</span><span className="num">${R0(T.expd)}</span></div>
-        <div className="ledger-r"><span>Product & packing cost</span><span className="num">${R0(-T.cost)}</span></div>
-        <div className="ledger-r"><span>Expenses</span><span className="num">${R0(-T.exp)}</span></div>
-        <div className="ledger-r"><span>Net profit</span><span className=${'num ' + (T.net < 0 ? 'neg' : '')}>${R0(T.net)}</span></div>
-      </div>
-    </div>
-    ${T.noCost.size || T.unlinked ? html`<${Note}>${T.noCost.size ? html`${T.noCost.size} product${T.noCost.size > 1 ? 's have' : ' has'} no cost price, so profit looks higher than it is. <button className="btn-link" onClick=${() => go('products', { filter: 'nocost' })}>Add costs</button>. ` : null}${T.unlinked ? html`${fmtN(T.unlinked)} order${T.unlinked > 1 ? 's aren’t' : ' isn’t'} linked to a product. <button className="btn-link" onClick=${() => go('orders', { status: 'unlinked' })}>Link them</button>.` : null}<//>` : null}
-    ${U.n ? html`<${Note} kind="info" icon="rupee">${fmtN(U.n)} delivered order${U.n > 1 ? 's' : ''} older than 14 days ${U.n > 1 ? 'have' : 'has'} no payment recorded (about ${R0(U.amt)}). Import your latest payment report, or check with the platform. <button className="btn-link" onClick=${() => go('orders', { status: 'unpaid', month: 'all' })}>See orders</button><//>` : null}
-    <div className="kpis">
-      <div className="kpi"><span className="kpi-l">Orders</span><span className="kpi-v">${fmtN(T.n)}</span><span className="kpi-s">${T.can ? fmtN(T.can) + ' cancelled' : 'not counting cancelled'}</span></div>
-      <div className="kpi"><span className="kpi-l">Sales value</span><span className="kpi-v">${R0(T.sale)}</span><span className="kpi-s">what customers paid</span></div>
-      <div className="kpi"><span className="kpi-l">Returns & RTO</span><span className=${'kpi-v ' + (pct(T.rto + T.ret, T.n) > 15 ? 'neg' : '')}>${pct(T.rto + T.ret, T.n)}%</span><span className="kpi-s">${fmtN(T.rto)} RTO · ${fmtN(T.ret)} returns</span></div>
-      <div className="kpi"><span className="kpi-l">Profit per order</span><span className=${'kpi-v ' + (T.n && T.profit / T.n < 0 ? 'neg' : '')}>${T.n ? R0(T.profit / T.n) : '—'}</span><span className="kpi-s">before expenses</span></div>
-    </div>
-    <div className="g-side"><${EarningsChart} T=${T}/><${PlatformCard} T=${T}/></div>
-    <div className="g2">
-      <div className="card"><div className="card-h"><div><h2>Stock</h2><p>${fmtN(A.units)} units worth ${R0(A.stockVal)} at cost</p></div><button className="btn btn-sm" onClick=${() => go('products')}>All products</button></div>
-        ${low.length ? html`<div className="list">${low.map(p => html`<button key=${p.id} className="lrow" onClick=${() => openProduct(p.id)}><${Thumb} p=${p} size=${40}/><div className="lrow-m"><div className="lrow-t">${p.name}</div><div className="lrow-s">${D.sold30[p.id] ? fmtN(D.sold30[p.id]) + ' sold in 30 days' : 'No sales in 30 days'}</div></div><div className="lrow-e"><${StockPill} p=${p} D=${D}/></div></button>`)}</div>`
-          : D.plist.length ? html`<${Empty} icon="check" title="Stock looks fine" text="Products running low will show here."/>` : html`<${Empty} icon="box" title="No products yet" text="Add products to track stock."><button className="btn btn-sm btn-p" onClick=${() => openProduct(null)}>Add product</button><//>`}
-      </div>
-      <div className="card"><div className="card-h"><div><h2>Since you started</h2><p>Your total money in and out</p></div></div>
+    <div className="ph"><div className="ph-t"><h1>${biz || 'Your business'}</h1><p>${dayLong(today())}</p></div>
+      <div className="chips" role="group" aria-label="Period">${HOME_PERIODS.map(([k, l]) => html`<button key=${k} className="chip" aria-pressed=${R.k === k} onClick=${() => setP(k)}>${l}</button>`)}</div></div>
+    <div className="profit">
+      <span className="eyebrow">${heading}</span>
+      <span className=${'big ' + (T.net < 0 ? 'neg' : '')}>${R0(T.net)}</span>
+      <p>${T.n ? `From ${fmtN(T.n)} order${T.n === 1 ? '' : 's'}${word ? ' ' + word : ''}.` : `No orders ${word} yet.`}${T.expd >= 1 ? html` <b className="num">${R0(T.expd)}</b> is still to come from Meesho/Flipkart.` : null}</p>
+      <details className="how"><summary>How is this worked out?</summary>
         <div className="ledger">
-          <div className="ledger-r"><span>Spent on stock</span><span className="num">${R0(A.invested)}</span></div>
-          <div className="ledger-r"><span>Spent on expenses</span><span className="num">${R0(A.exp)}</span></div>
-          <div className="ledger-r"><span>Received from platforms</span><span className="num">${R0(A.recv)}</span></div>
-          <div className="ledger-r"><span>Still to receive (estimated)</span><span className="num">${R0(A.expd)}</span></div>
-          <div className="ledger-r"><span>Stock in hand (at cost)</span><span className="num">${R0(A.stockVal)}</span></div>
-          <div className="ledger-r"><span>${A.net >= 0 ? 'Overall you are up' : 'Overall you are down'}</span><span className=${'num ' + sgn(A.net)}>${R0(A.net)}</span></div>
-        </div></div>
+          <div className="ledger-r"><span>Money received</span><span className="num">${R0(T.recv)}</span></div>
+          <div className="ledger-r"><span>Money still to come</span><span className="num">${R0(T.expd)}</span></div>
+          <div className="ledger-r"><span>Cost of products sold, with packing</span><span className="num">${R0(-T.cost)}</span></div>
+          <div className="ledger-r"><span>Expenses</span><span className="num">${R0(-T.exp)}</span></div>
+          <div className="ledger-r"><span>Profit</span><span className=${'num ' + (T.net < 0 ? 'neg' : '')}>${R0(T.net)}</span></div>
+        </div></details>
     </div>
-    <div className="card"><div className="card-h"><div><h2>Best sellers · ${R.label}</h2><p>By units sold</p></div><button className="btn btn-sm" onClick=${() => go('reports')}>Full report</button></div>
-      ${top.length ? html`<div className="tbl-wrap"><table className="tbl"><thead><tr><th>Product</th><th className="r">Units</th><th className="r hide-sm">Payout</th><th className="r">Profit</th><th className="r hide-sm">Returns</th></tr></thead><tbody>
-        ${top.map(r => html`<tr key=${r.key}><td><div className="pn"><${Thumb} p=${D.products[r.pid] || { name: r.name }} size=${34}/><span>${r.name}</span></div></td><td className="r num">${fmtN(r.q)}</td><td className="r num hide-sm">${R0(r.inc)}</td><td className=${'r num ' + (r.profit < 0 ? 'neg' : '')}>${R0(r.profit)}</td><td className="r num hide-sm">${pct(r.back, r.n)}%</td></tr>`)}
-      </tbody></table></div>` : html`<${Empty} icon="orders" title="No sales in this period" text="Import your Meesho or Flipkart orders to see your best sellers."><button className="btn btn-sm btn-p" onClick=${() => go('import')}>Import report</button><//>`}
-    </div>`;
+    <div className="acts">
+      <button className="act" onClick=${openNewOrder}><span className="ic"><${Icon} n="orders"/></span><b>Sale</b><span>Add a sale by hand</span></button>
+      <button className="act" onClick=${() => openExpense(null)}><span className="ic"><${Icon} n="wallet"/></span><b>Expense</b><span>Packing, ads, courier</span></button>
+      <button className="act" onClick=${() => openStock('buy')}><span className="ic"><${Icon} n="stock"/></span><b>Add stock</b><span>New pieces you bought</span></button>
+      <button className="act" onClick=${() => go('import')}><span className="ic"><${Icon} n="upload"/></span><b>Upload file</b><span>Meesho or Flipkart report</span></button>
+    </div>
+    ${isNew ? html`<${StartCard} D=${D}/>` : html`
+    <div className="card" style=${{ paddingBlock: items.length ? '14px 6px' : 14 }}>
+      <div className="card-h" style=${{ marginBottom: items.length ? 4 : 0 }}><h2>Needs your attention</h2>${!items.length ? html`<span className="pill s-delivered">All good</span>` : null}</div>
+      ${items.length ? html`<div className="list">${items}</div>` : null}
+    </div>
+    <div className="stat2">
+      <div className="kpi"><span className="kpi-l">Orders</span><span className="kpi-v">${fmtN(T.n)}</span><span className="kpi-s">${word}</span></div>
+      <div className="kpi"><span className="kpi-l">Returns</span><span className=${'kpi-v ' + (T.n && pct(T.rto + T.ret, T.n) > 15 ? 'neg' : '')}>${fmtN(T.rto + T.ret)}</span><span className="kpi-s">${T.n ? Math.round(pct(T.rto + T.ret, T.n)) + '% of orders came back' : word}</span></div>
+    </div>
+    <div style=${{ display: 'flex', justifyContent: 'center' }}><button className="btn" onClick=${() => go('reports')}><${Icon} n="chart"/>See full report</button></div>`}`;
 }
-
 function ProductsView(){
   useStoreV(); useUI();
   const D = derive();
   const [q, setQ] = useState('');
   const [filter, setFilter] = useState(() => ui.params.filter || 'all');
-  const counts = { all: 0, low: 0, out: 0, nocost: 0, off: 0 };
-  for (const p of D.plist){ const s = stockState(p, D); if (p.active !== false){ counts.all++; if (s === 'low') counts.low++; if (s === 'out') counts.out++; } else counts.off++; if (!(Number(p.cost) > 0)) counts.nocost++; }
+  const counts = { all: 0, low: 0, nocost: 0, off: 0 };
+  for (const p of D.plist){ const s = stockState(p, D); if (p.active !== false){ counts.all++; if (s !== 'ok') counts.low++; if (!(Number(p.cost) > 0)) counts.nocost++; } else counts.off++; }
   const ql = q.trim().toLowerCase();
   const list = D.plist.filter(p => {
     const s = stockState(p, D);
     if (filter === 'off'){ if (p.active !== false) return false; }
-    else if (filter !== 'nocost' && p.active === false) return false;
-    if (filter === 'low' && s !== 'low') return false;
-    if (filter === 'out' && s !== 'out') return false;
+    else if (p.active === false) return false;
+    if (filter === 'low' && s === 'ok') return false;
     if (filter === 'nocost' && Number(p.cost) > 0) return false;
     if (ql && !(p.name || '').toLowerCase().includes(ql) && !(p.skus || []).some(x => x.toLowerCase().includes(ql)) && !(p.cat || '').toLowerCase().includes(ql)) return false;
     return true;
@@ -1646,25 +1683,24 @@ function ProductsView(){
   const A = allTime(D);
   const pack = p => p.packing != null && p.packing !== '' ? Number(p.packing) : Number(D.settings.packing) || 0;
   return html`
-    <div className="ph"><div className="ph-t"><h1>Products</h1><p>${fmtN(counts.all)} active · ${fmtN(A.units)} units in stock · ${R0(A.stockVal)} at cost</p></div>
-      <div className="ph-a"><button className="btn" onClick=${() => openStock('buy')}><${Icon} n="stock"/>Stock in</button><button className="btn btn-p" onClick=${() => openProduct(null)}><${Icon} n="plus"/>Add product</button></div></div>
+    <div className="ph"><div className="ph-t"><h1>Products</h1><p>${fmtN(counts.all)} products · ${fmtN(A.units)} pieces in stock, worth ${R0(A.stockVal)}</p></div>
+      <div className="ph-a"><button className="btn" onClick=${() => openStock('buy')}><${Icon} n="stock"/>Add stock</button><button className="btn btn-p" onClick=${() => openProduct(null)}><${Icon} n="plus"/>New product</button></div></div>
     <div style=${{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-      <label style=${{ position: 'relative', flex: '1 1 240px', maxWidth: 380 }}><span className="sr">Search products</span><span style=${{ position: 'absolute', left: 11, top: 11, color: 'var(--ink-3)' }}><${Icon} n="search" s=${18}/></span><input className="in" style=${{ paddingLeft: 36 }} value=${q} onChange=${e => setQ(e.target.value)} placeholder="Search name, SKU or category"/></label>
-      <div className="chips">${[['all', 'Active'], ['low', 'Low stock'], ['out', 'Out of stock'], ['nocost', 'No cost'], ['off', 'Inactive']].map(([k, l]) => html`<button key=${k} className="chip" aria-pressed=${filter === k} onClick=${() => setFilter(k)}>${l}<span className="cnt">${counts[k]}</span></button>`)}</div>
+      <label style=${{ position: 'relative', flex: '1 1 240px', maxWidth: 380 }}><span className="sr">Search products</span><span style=${{ position: 'absolute', left: 11, top: 11, color: 'var(--ink-3)' }}><${Icon} n="search" s=${18}/></span><input className="in" style=${{ paddingLeft: 36 }} value=${q} onChange=${e => setQ(e.target.value)} placeholder="Search products"/></label>
+      <div className="chips">${[['all', 'All'], ['low', 'Low stock'], ['nocost', 'No cost'], ['off', 'Hidden']].map(([k, l]) => html`<button key=${k} className="chip" aria-pressed=${filter === k} onClick=${() => setFilter(k)}>${l}<span className="cnt">${counts[k]}</span></button>`)}</div>
     </div>
     ${list.length ? html`<div className="pgrid">${list.map(p => {
       const cost = Number(p.cost) || 0;
-      const prof = k => p.payout && Number(p.payout[k]) > 0 ? Number(p.payout[k]) - cost - pack(p) : null;
+      const prof = k => cost > 0 && p.payout && Number(p.payout[k]) > 0 ? Number(p.payout[k]) - cost - pack(p) : null;
       const pm = prof('m'), pf = prof('f');
       return html`<button key=${p.id} className="pcard" onClick=${() => openProduct(p.id)}>
-        <${Thumb} p=${p} size=${78}/>
+        <${Thumb} p=${p} size=${72}/>
         <div className="pcard-m">
           <div className="pcard-t">${p.name}</div>
-          <div className="pcard-row"><${StockPill} p=${p} D=${D}/>${(p.skus || []).slice(0, 2).map(s => html`<span key=${s} className="sku">${s}</span>`)}${(p.skus || []).length > 2 ? html`<span className="muted">+${p.skus.length - 2}</span>` : null}</div>
-          <div className="pcard-row"><span>Cost <b className=${'num ' + (cost ? '' : 'warn-t')}>${cost ? fmtINR(cost) : 'not set'}</b></span><span>Sold 30d <b className="num">${fmtN(D.sold30[p.id] || 0)}</b></span></div>
-          ${pm != null || pf != null ? html`<div className="pcard-row">${pm != null ? html`<span><${Plat} p="m"/> <b className=${'num ' + sgn(pm)}>${fmtINR(pm)}</b>/unit</span>` : null}${pf != null ? html`<span><${Plat} p="f"/> <b className=${'num ' + sgn(pf)}>${fmtINR(pf)}</b>/unit</span>` : null}</div>` : html`<div className="pcard-row muted">Add payout to see profit per unit</div>`}
+          <div className="pcard-row"><${StockPill} p=${p} D=${D}/>${cost ? html`<span>Cost <b className="num">${fmtINR(cost)}</b></span>` : html`<span className="warn-t">Cost not added</span>`}</div>
+          ${pm != null || pf != null ? html`<div className="pcard-row"><span>Profit on 1 piece: ${pm != null ? html`<b className=${'num ' + sgn(pm)}>${fmtINR(pm)}</b> Meesho` : null}${pm != null && pf != null ? ' · ' : ''}${pf != null ? html`<b className=${'num ' + sgn(pf)}>${fmtINR(pf)}</b> Flipkart` : null}</span></div>` : html`<div className="pcard-row muted">Tap to add cost and money you get</div>`}
         </div></button>`;
-    })}</div>` : html`<div className="card">${D.plist.length ? html`<${Empty} icon="search" title="No products match" text="Try another search or filter."/>` : html`<${Empty} icon="box" title="Add your first product" text="Add each product once with its photos, cost and the SKU you use on Meesho or Flipkart. Imported orders are matched to products by SKU."><button className="btn btn-p" onClick=${() => openProduct(null)}><${Icon} n="plus"/>Add product</button><//>`}</div>`}`;
+    })}</div>` : html`<div className="card">${D.plist.length ? html`<${Empty} icon="search" title="No products match" text="Try another search or filter."/>` : html`<${Empty} icon="box" title="Add your first product" text="Add each product once with a photo, its cost and how many pieces you have."><button className="btn btn-p" onClick=${() => openProduct(null)}><${Icon} n="plus"/>New product</button><//>`}</div>`}`;
 }
 
 function OrdersView(){
@@ -1695,7 +1731,7 @@ function OrdersView(){
   async function loadOlder(){ setLoadingOld(true); await attempt(() => loadAllMonths(), 'All past months loaded'); setLoadingOld(false); }
   return html`
     <div className="ph"><div className="ph-t"><h1>Orders</h1><p>${fmtN(list.length)} order${list.length === 1 ? '' : 's'} · payout ${R0(inc)} · profit <span className=${prof < 0 ? 'neg' : ''}>${R0(prof)}</span></p></div>
-      <div className="ph-a"><button className="btn" onClick=${() => go('import')}><${Icon} n="upload"/>Import report</button><button className="btn btn-p" onClick=${openNewOrder}><${Icon} n="plus"/>Add order</button></div></div>
+      <div className="ph-a"><button className="btn" onClick=${() => go('import')}><${Icon} n="upload"/>Upload file</button><button className="btn btn-p" onClick=${openNewOrder}><${Icon} n="plus"/>Add sale</button></div></div>
     <div style=${{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
       <select className="in" style=${{ width: 'auto', minWidth: 150 }} value=${month} onChange=${e => setMonth(e.target.value)} aria-label="Month">
         ${months.map(m => html`<option key=${m} value=${m}>${monthLabel(m)}</option>`)}<option value="all">All loaded months</option></select>
@@ -1713,7 +1749,7 @@ function OrdersView(){
           <div className="lrow-e"><${Status} s=${c.st}/><span className="num">${c.paid ? fmtINR(c.recv) : c.expected ? '~' + fmtINR(c.expected) : '—'}</span><span className=${'small ' + sgn(c.profit)}><span className="num">${fmtINR(c.profit)}</span> profit</span></div>
         </button>`;
       })}</div>${list.length > limit ? html`<div className="more-btn"><button className="btn btn-sm" onClick=${() => setLimit(l => l + 100)}>Show more (${fmtN(list.length - limit)} left)</button></div>` : null}`
-      : html`<${Empty} icon="orders" title=${D.orders.length ? 'No orders match' : 'No orders yet'} text=${D.orders.length ? 'Try another month, platform or status.' : 'Import your Meesho or Flipkart orders file, or add an order by hand.'}>${D.orders.length ? null : html`<button className="btn btn-p" onClick=${() => go('import')}><${Icon} n="upload"/>Import report</button>`}<//>`}
+      : html`<${Empty} icon="orders" title=${D.orders.length ? 'No orders match' : 'No orders yet'} text=${D.orders.length ? 'Try another month, platform or status.' : 'Upload your Meesho or Flipkart orders file, or add a sale by hand.'}>${D.orders.length ? null : html`<button className="btn btn-p" onClick=${() => go('import')}><${Icon} n="upload"/>Upload file</button>`}<//>`}
     </div>
     ${!st.sample && !st.allLoaded && st.db ? html`<div className="pager">Showing the last 12 months. <button className="btn-link" disabled=${loadingOld} onClick=${loadOlder}>${loadingOld ? 'Loading…' : 'Load older months'}</button></div>` : null}
     <p className="pager">~ means estimated payout, until the platform's payment report is imported.</p>`;
@@ -1744,6 +1780,33 @@ function ExpensesView(){
     </div>` : html`<div className="card"><${Empty} icon="wallet" title="No expenses in this month" text="Add packing material, ads, courier, rent and other costs. They're taken off your profit."><button className="btn btn-p" onClick=${() => openExpense(null)}><${Icon} n="plus"/>Add expense</button><//></div>`}`;
 }
 
+function ReportsOverview({ D, R, T }){
+  const A = allTime(D);
+  const top = [...T.prod.values()].sort((a, b) => b.q - a.q).slice(0, 6);
+  return html`
+    <div className="kpis">
+      <div className="kpi"><span className="kpi-l">Orders</span><span className="kpi-v">${fmtN(T.n)}</span><span className="kpi-s">${T.can ? fmtN(T.can) + ' cancelled' : 'not counting cancelled'}</span></div>
+      <div className="kpi"><span className="kpi-l">Sales value</span><span className="kpi-v">${R0(T.sale)}</span><span className="kpi-s">what customers paid</span></div>
+      <div className="kpi"><span className="kpi-l">Returns & RTO</span><span className=${'kpi-v ' + (pct(T.rto + T.ret, T.n) > 15 ? 'neg' : '')}>${pct(T.rto + T.ret, T.n)}%</span><span className="kpi-s">${fmtN(T.rto)} RTO · ${fmtN(T.ret)} returns</span></div>
+      <div className="kpi"><span className="kpi-l">Profit per order</span><span className=${'kpi-v ' + (T.n && T.profit / T.n < 0 ? 'neg' : '')}>${T.n ? R0(T.profit / T.n) : '—'}</span><span className="kpi-s">before expenses</span></div>
+    </div>
+    <div className="g-side"><${EarningsChart} T=${T}/><${PlatformCard} T=${T}/></div>
+    <div className="g2">
+      <div className="card"><div className="card-h"><div><h2>Best sellers · ${R.label}</h2><p>By pieces sold</p></div></div>
+        ${top.length ? html`<div className="tbl-wrap"><table className="tbl"><thead><tr><th>Product</th><th className="r">Pieces</th><th className="r">Profit</th></tr></thead><tbody>
+          ${top.map(r => html`<tr key=${r.key}><td><div className="pn"><${Thumb} p=${D.products[r.pid] || { name: r.name }} size=${32}/><span>${r.name}</span></div></td><td className="r num">${fmtN(r.q)}</td><td className=${'r num ' + (r.profit < 0 ? 'neg' : '')}>${R0(r.profit)}</td></tr>`)}
+        </tbody></table></div>` : html`<${Empty} icon="orders" title="No sales in this period"/>`}</div>
+      <div className="card"><div className="card-h"><div><h2>Since you started</h2><p>All your money in and out</p></div></div>
+        <div className="ledger">
+          <div className="ledger-r"><span>Spent on stock</span><span className="num">${R0(A.invested)}</span></div>
+          <div className="ledger-r"><span>Spent on expenses</span><span className="num">${R0(A.exp)}</span></div>
+          <div className="ledger-r"><span>Received from platforms</span><span className="num">${R0(A.recv)}</span></div>
+          <div className="ledger-r"><span>Still to come</span><span className="num">${R0(A.expd)}</span></div>
+          <div className="ledger-r"><span>Stock in hand (at cost)</span><span className="num">${R0(A.stockVal)}</span></div>
+          <div className="ledger-r"><span>${A.net >= 0 ? 'Overall you are up' : 'Overall you are down'}</span><span className=${'num ' + sgn(A.net)}>${R0(A.net)}</span></div>
+        </div></div>
+    </div>`;
+}
 function ReportsView(){
   useStoreV();
   const D = derive();
@@ -1779,14 +1842,17 @@ function ReportsView(){
     for (const p of D.plist){ const q = D.stock[p.id] || 0; out.push([p.name, (p.skus || []).join(' | '), p.cat || '', p.cost || 0, p.packing != null ? p.packing : D.settings.packing, q, round2(Math.max(0, q) * (Number(p.cost) || 0)), p.price && p.price.m || '', p.payout && p.payout.m || '', p.price && p.price.f || '', p.payout && p.payout.f || '', D.sold30[p.id] || 0]); }
     saveFile(`products-stock-${today()}.csv`, toCSV(out));
   }
+  T.bucketName = R.bucket === 'month' ? 'month' : 'day';
   return html`
-    <div className="ph"><div className="ph-t"><h1>Reports</h1><p>Month-wise profit and product performance</p></div>
+    <div className="ph"><div className="ph-t"><h1>Reports</h1><p>All the details: charts, months and products</p></div>
       <div className="ph-a"><button className="btn" onClick=${exportPL}><${Icon} n="down"/>Profit & loss CSV</button><button className="btn" onClick=${exportProducts}><${Icon} n="down"/>Products CSV</button></div></div>
+    <div className="ph"><h2>${R.label}</h2><${PeriodChips} value=${pk} onChange=${setPk}/></div>
+    <${ReportsOverview} D=${D} R=${R} T=${T}/>
     <div className="card"><div className="card-h"><div><h2>Profit & loss by month</h2><p>Payout includes estimated pending payments. Profit is after product cost, packing and expenses.</p></div></div>
       <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Month</th><th className="r hide-sm">Orders</th><th className="r">Payout</th><th className="r hide-sm">Product cost</th><th className="r hide-sm">Expenses</th><th className="r">Net profit</th><th className="r hide-sm">Stock bought</th><th className="r hide-sm">Returns</th></tr></thead>
       <tbody>${rows.map(r => html`<tr key=${r.m}><td>${monthLabel(r.m)}</td><td className="r num hide-sm">${fmtN(r.n)}</td><td className="r num">${R0(r.inc)}</td><td className="r num hide-sm">${R0(r.cost)}</td><td className="r num hide-sm">${R0(r.exp)}</td><td className=${'r num ' + sgn(r.profit)}>${R0(r.profit)}</td><td className="r num hide-sm">${R0(r.buy)}</td><td className="r num hide-sm">${r.ret}%</td></tr>`)}</tbody>
       <tfoot><tr><td>Total</td><td className="r num hide-sm">${fmtN(tot.n)}</td><td className="r num">${R0(tot.inc)}</td><td className="r num hide-sm">${R0(tot.cost)}</td><td className="r num hide-sm">${R0(tot.exp)}</td><td className=${'r num ' + sgn(tot.profit)}>${R0(tot.profit)}</td><td className="r num hide-sm">${R0(tot.buy)}</td><td className="r num hide-sm">${pct(tot.rr, tot.n)}%</td></tr></tfoot></table></div></div>
-    <div className="ph"><h2>Products · ${R.label}</h2><${PeriodChips} value=${pk} onChange=${setPk}/></div>
+    <div className="ph"><h2>Products · ${R.label}</h2></div>
     <div className="card">
       ${prods.length ? html`<div className="tbl-wrap"><table className="tbl"><thead><tr><th>Product</th><th className="r hide-sm">Orders</th><th className="r">Units</th><th className="r hide-sm">Payout</th><th className="r">Profit</th><th className="r hide-sm">Profit/unit</th><th className="r hide-sm">Returns</th><th className="r">In stock</th></tr></thead><tbody>
         ${prods.map(r => html`<tr key=${r.key}><td><div className="pn"><${Thumb} p=${D.products[r.pid] || { name: r.name }} size=${34}/><span>${r.name}</span></div></td><td className="r num hide-sm">${fmtN(r.n)}</td><td className="r num">${fmtN(r.q)}</td><td className="r num hide-sm">${R0(r.inc)}</td><td className=${'r num ' + sgn(r.profit)}>${R0(r.profit)}</td><td className="r num hide-sm">${r.q ? fmtINR(r.profit / r.q) : '—'}</td><td className="r num hide-sm">${pct(r.back, r.n)}%</td><td className="r num">${r.pid && D.stock[r.pid] != null ? fmtN(D.stock[r.pid]) : '—'}</td></tr>`)}
@@ -1980,7 +2046,7 @@ function ImportView(){
     ? html`<ul><li><b>Orders file</b>: in the Meesho Supplier Panel, open Orders and download the orders list (CSV). It brings in status: delivered, RTO, returns, cancelled.</li><li><b>Payment file</b>: open Payments and download the payment report (Excel). Its Order Payments sheet has the final settlement amount for each sub order. This is what you actually received.</li></ul>`
     : html`<ul><li>Any CSV or Excel file with one row per order works. You'll match its columns on the next step.</li></ul>`;
   return html`
-    <div className="ph"><div className="ph-t"><h1>Import report</h1><p>Bring in orders and payments from your seller panel. Importing the same file twice is safe, because orders are matched by their ID.</p></div></div>
+    <div className="ph"><div className="ph-t"><h1>Upload file</h1><p>Upload the orders or payments file from Meesho or Flipkart. Uploading the same file again is safe: nothing is counted twice.</p></div></div>
     ${phase === 'done' && res ? html`<div className="card"><${Empty} icon="check" title="Import finished" text=${`${fmtN(res.add)} new order${res.add === 1 ? '' : 's'} added and ${fmtN(res.upd)} updated. ${res.pay ? fmtN(res.pay) + ' payment' + (res.pay === 1 ? '' : 's') + ' recorded. ' : ''}${res.total - res.linked ? fmtN(res.total - res.linked) + ' order' + (res.total - res.linked === 1 ? ' is' : 's are') + ' not linked to a product yet.' : 'All orders are linked to products.'}`}>
         <div style=${{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}><button className="btn btn-p" onClick=${() => go('home')}>See dashboard</button><button className="btn" onClick=${() => go('orders')}>View orders</button><button className="btn" onClick=${reset}>Import another file</button></div><//></div>` : null}
     ${phase === 'pick' || phase === 'parsing' ? html`
@@ -2040,7 +2106,7 @@ function ImportView(){
 }
 
 /* ======================= app ======================= */
-const NAV = [['home', 'home', 'Dashboard'], ['orders', 'orders', 'Orders'], ['products', 'box', 'Products'], ['expenses', 'wallet', 'Expenses'], ['reports', 'chart', 'Reports'], ['import', 'upload', 'Import report'], ['setup', 'sliders', 'Setup']];
+const NAV = [['home', 'home', 'Home'], ['orders', 'orders', 'Orders'], ['products', 'box', 'Products'], ['expenses', 'wallet', 'Expenses'], ['reports', 'chart', 'Reports'], ['import', 'upload', 'Upload file'], ['setup', 'sliders', 'Setup']];
 function App(){
   useStoreV(); useUI();
   const view = ui.view;
@@ -2056,7 +2122,7 @@ function App(){
     </div></aside>
     <div className="col">
       <header className="topbar"><${Brand} compact=${true}/><span className="grow"></span>
-        <button className="icon-btn" aria-label="Import report" onClick=${() => go('import')}><${Icon} n="upload"/></button></header>
+        <button className="icon-btn" aria-label="Upload file" onClick=${() => go('import')}><${Icon} n="upload"/></button></header>
       <main className="main"><div className="wrap" key=${view}>
         <${Banners}/>
         ${live || st.phase === 'nodb' ? html`<${V}/>` : html`<${Loading}/>`}
