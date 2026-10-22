@@ -3,10 +3,11 @@
 Stock, orders, payouts, expenses and real profit for a Meesho and Flipkart business.
 Works on phone and computer, and can be installed to the home screen.
 
-- **Dashboard**: net profit for any period, payout received and pending, returns/RTO rate, daily earnings, platform split, best sellers, low stock.
-- **Products**: photos, SKU, cost, packing, stock, selling price and payout per platform, with profit per unit.
-- **Import report**: upload Meesho or Flipkart orders and payment files as downloaded. Re-importing the same file never double-counts.
-- **Orders, Expenses, Reports**: month-wise profit & loss, product-wise sales, CSV downloads, full backup and restore.
+- **Home**: your profit for today, the last 7 days or this month, four big buttons (Sale, Expense, Add stock, Upload file) and a short list of what needs your attention.
+- **Products**: photo, name, cost of 1 piece, pieces you have, and the money Meesho or Flipkart pays you, with profit on 1 piece. SKU, prices, packing and notes sit under *More details*.
+- **Stock**: *Add stock* when you buy pieces (the cost of 1 piece is averaged for you) and *Fix stock count* when your real count is different.
+- **Upload file**: upload Meesho or Flipkart orders and payment files as downloaded. Uploading the same file again never double-counts.
+- **Orders, Expenses, Reports**: month-wise profit and loss, product-wise sales, CSV downloads, full backup and restore.
 
 ## How it runs
 
